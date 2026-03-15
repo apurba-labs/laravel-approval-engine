@@ -25,7 +25,8 @@ class ApprovalEngineServiceProvider extends ServiceProvider
     public function register()
     {
         $this->commands([
-            \ApurbaLabs\ApprovalEngine\Console\InstallCommand::class
+            \ApurbaLabs\ApprovalEngine\Console\InstallCommand::class,
+            \ApurbaLabs\ApprovalEngine\Console\SendWorkflowBatchCommand::class,
         ]);
     }
 
