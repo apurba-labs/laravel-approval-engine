@@ -20,6 +20,10 @@ class ApprovalEngineServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__.'/../resources/views' => resource_path('views/vendor/approval-engine'),
         ], 'approval-views');
+        
+        $this->publishes([
+            __DIR__.'/../database/seeders' => database_path('seeders')
+        ], 'approval-seeders');
     }
 
     public function register()

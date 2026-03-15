@@ -9,6 +9,8 @@ return [
             'model' => App\Models\Requisition::class,
 
             'approved_column' => 'approved_at',
+
+            'status_column' => 'stage_status',  // value must be 'Approve'
             
             // Relations to eager load
             'relations' => [

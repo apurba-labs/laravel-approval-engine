@@ -8,12 +8,13 @@ class InstallCommand extends Command
 {
     protected $signature = 'approval-engine:install';
 
-    protected $description = 'Install Laravel Approval Engine';
+    protected $description = 'Install and initialize the Laravel Approval Engine';
 
     public function handle()
     {
         $this->info('Installing Laravel Approval Engine...');
 
+        $this->info('Publishing assets...');
         $this->call('vendor:publish', [
             '--tag' => 'approval-config'
         ]);
@@ -22,6 +23,17 @@ class InstallCommand extends Command
             '--tag' => 'approval-views'
         ]);
 
-        $this->info('Installation completed.');
+        if ($this->confirm('Do you want to run the migrations now?', true)) {
+            $this->call('migrate');
+        }
+
+        if ($this->confirm('Do you want to seed the default workflow stages?', false)) {
+            $this->info('Seeding database...');
+            $this->call('db:seed', [
+                '--class' => WorkflowSeeder::class
+            ]);
+        }
+
+        $this->info('Installation completed successfully!');
     }
 }
