@@ -5,16 +5,17 @@ namespace ApurbaLabs\ApprovalEngine\Tests\Feature;
 use ApurbaLabs\ApprovalEngine\Tests\TestCase;
 use ApurbaLabs\ApprovalEngine\Models\WorkflowBatch;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Schema;
 
 class BatchCreationTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshDatabase; // Handles migration and transactions automatically
 
     /** @test */
     public function test_batch_table_exists()
     {
         $this->assertTrue(
-            \Schema::hasTable('workflow_batches')
+            Schema::hasTable('workflow_batches')
         );
     }
     /** @test */
