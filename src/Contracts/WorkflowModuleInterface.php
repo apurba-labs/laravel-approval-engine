@@ -7,6 +7,15 @@ use Illuminate\Database\Eloquent\Builder;
 interface WorkflowModuleInterface
 {
     /**
+     * The fully qualified modules name a consistent identifier for following criteria:
+     * USE CASE 1: Modules must have a consistent identifier.
+     * USE CASE 2: Batch Creation.
+     * USE CASE 3: Database Storage.
+     * USE CASE 4: Database Storage
+     */
+    public function name(): string;
+    
+    /**
      * The fully qualified class name of the Eloquent model.
      */
     public function model(): string;
