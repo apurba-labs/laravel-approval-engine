@@ -3,7 +3,8 @@ namespace ApurbaLabs\ApprovalEngine\Console;
 
 use Illuminate\Console\Command;
 use ApurbaLabs\ApprovalEngine\Engine\WorkflowEngine;
-use ApurbaLabs\ApprovalEngine\Engine\BatchProcessor;
+use ApurbaLabs\ApprovalEngine\Support\StageResolver;
+use ApurbaLabs\ApprovalEngine\Support\BatchProcessor;
 
 class SendWorkflowBatchCommand extends Command
 {
@@ -16,20 +17,19 @@ class SendWorkflowBatchCommand extends Command
         $engine = app(WorkflowEngine::class);
         $processor = app(BatchProcessor::class);
 
-        $modulesConfig = config('approval-engine.modules', []);
-        
-        if (empty($modulesConfig)) {
-            $this->warn('No workflow modules found in config/approval-engine.php');
+        $modules = $engine->discoverModules();
+
+        if (empty($modules)) {
+            $this->warn('No workflow modules discovered in ' . config('approval-engine.modules_path'));
             return Command::SUCCESS;
         }
 
-        $modules = array_keys($modulesConfig);
-
         foreach ($modules as $module) {
-            $this->info("Processing module: {$module}");
+            $moduleName = $module->name(); 
+            $this->info("Processing module: {$moduleName}");
 
             $records = $engine->getApprovedRecords(
-                $module,
+                $moduleName,
                 now()->subDay(),
                 now()
             );
@@ -37,9 +37,9 @@ class SendWorkflowBatchCommand extends Command
             if ($records->isEmpty()) {
                 continue;
             }
-
+            dump("Found " . $records->count() . " records for " . $module->name());
             $batch = $processor->createBatch(
-                $module,
+                $moduleName,
                 1,
                 now()->subDay(),
                 now()
@@ -47,7 +47,7 @@ class SendWorkflowBatchCommand extends Command
 
             $processor->markSent($batch, $records->count());
 
-            $this->info("Batch created for module: {$module}");
+            $this->info("Batch created for module: {$moduleName}");
         }
     }
 }
