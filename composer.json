@@ -5,7 +5,8 @@
   "license": "MIT",
   "autoload": {
     "psr-4": {
-      "ApurbaLabs\\ApprovalEngine\\": "src/"
+      "ApurbaLabs\\ApprovalEngine\\": "src/",
+      "ApurbaLabs\\ApprovalEngine\\Database\\Seeders\\": "database/seeders/"
     }
   },
   "autoload-dev": {

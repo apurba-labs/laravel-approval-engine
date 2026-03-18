@@ -2,10 +2,21 @@
 
 namespace ApurbaLabs\ApprovalEngine\Modules;
 
+use Illuminate\Database\Eloquent\Builder;
 use ApurbaLabs\ApprovalEngine\Contracts\WorkflowModuleInterface;
 
 abstract class BaseWorkflowModule implements WorkflowModuleInterface
 {
+    /**
+     * Method to Modules. 
+     * Example: SalesOrderModule → salesorder, PurchaseOrderModule → purchaseorder
+     */
+    public function name(): string
+    {
+        return strtolower(
+            str_replace('Module','',class_basename($this))
+        );
+    }
     /**
      * Default status column name. 
      * Override this in the child class if it differs.
@@ -16,11 +27,11 @@ abstract class BaseWorkflowModule implements WorkflowModuleInterface
     }
 
     /**
-     * Default approval boolean column name.
+     * Default approval timestamp column name.
      */
     public function approvedColumn(): string
     {
-        return 'is_approved';
+        return 'approved_at';
     }
 
     /**
@@ -39,5 +50,11 @@ abstract class BaseWorkflowModule implements WorkflowModuleInterface
     public function displayColumns(): array
     {
         return [];
+    }
+
+    public function query(): Builder
+    {
+        $model = $this->model();
+        return $model::query();
     }
 }

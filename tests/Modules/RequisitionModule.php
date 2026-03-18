@@ -35,6 +35,7 @@ class RequisitionModule extends BaseWorkflowModule
             'reference_id',
             'stage',
             'stage_status',
+            'status',
             'approved_at',
         ];
     }

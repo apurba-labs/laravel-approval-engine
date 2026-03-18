@@ -23,6 +23,7 @@ class BatchCreationTest extends TestCase
     {
         $batch = WorkflowBatch::create([
             'module' => 'requisition',
+            'role' => 'HOSD',
             'stage' => 1,
             'token' => 'testtoken',
             'window_start' => now(),
@@ -30,7 +31,8 @@ class BatchCreationTest extends TestCase
         ]);
 
         $this->assertDatabaseHas('workflow_batches', [
-            'token' => 'testtoken'
+            'token' => 'testtoken',
+            'role' => 'HOSD'
         ]);
     }
 }
