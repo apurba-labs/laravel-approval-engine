@@ -47,3 +47,4 @@ jobs:
           DB_DATABASE: approval_engine_dev_test
           DB_USERNAME: root
         run: ./vendor/bin/phpunit
+*-

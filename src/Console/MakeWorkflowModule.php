@@ -39,7 +39,7 @@ use Illuminate\Database\Eloquent\Builder;
 class {$className} extends BaseWorkflowModule
 {
 
-    public function model()
+    public function model():string
     {
         // return \App\Models\SalesOrder::class;
     }
@@ -58,6 +58,12 @@ class {$className} extends BaseWorkflowModule
     {
         return [
             // 'customer', 'items'
+        ];
+    }
+    public function selectColumns(): array
+    {
+         return [
+            // 'id', 'user_id', 'reference_id', 'stage', 'stage_status', 'status', 'approved_at',
         ];
     }
 

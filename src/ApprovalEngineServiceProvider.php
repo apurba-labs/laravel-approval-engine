@@ -11,6 +11,12 @@ use ApurbaLabs\ApprovalEngine\Listeners\SendBatchApprovalNotification;
 use ApurbaLabs\ApprovalEngine\Events\WorkflowCompleted;
 use ApurbaLabs\ApprovalEngine\Listeners\NotifyWorkflowCompletion;
 
+use ApurbaLabs\ApprovalEngine\Console\InstallCommand;
+use ApurbaLabs\ApprovalEngine\Console\SendWorkflowBatchCommand;
+use ApurbaLabs\ApprovalEngine\Console\MakeWorkflowModule;
+use ApurbaLabs\ApprovalEngine\Console\WorkflowVisualizerCommand;
+use ApurbaLabs\ApprovalEngine\Console\BatchStatusCommand;
+
 class ApprovalEngineServiceProvider extends ServiceProvider
 {
     protected $listen = [
@@ -59,9 +65,11 @@ class ApprovalEngineServiceProvider extends ServiceProvider
     public function register()
     {
         $this->commands([
-            \ApurbaLabs\ApprovalEngine\Console\InstallCommand::class,
-            \ApurbaLabs\ApprovalEngine\Console\SendWorkflowBatchCommand::class,
-            \ApurbaLabs\ApprovalEngine\Console\MakeWorkflowModule::class,
+            InstallCommand::class,
+            SendWorkflowBatchCommand::class,
+            MakeWorkflowModule::class,
+            WorkflowVisualizerCommand::class,
+            BatchStatusCommand::class,
         ]);
     }
 
