@@ -1,0 +1,31 @@
+# Core Dependencies
+/vendor
+/node_modules
+
+# Environment & Private Files
+.env
+.env.*
+auth.json
+Homestead.json
+Homestead.yaml
+
+# Testing & Cache
+.phpunit.result.cache
+/.phpunit.cache
+.phpactor.json
+*.log
+
+# IDEs & Editors
+/.idea
+/.vscode
+/.fleet
+/.nova
+/.zed
+.DS_Store
+Thumbs.db
+
+# Laravel Specific (if they end up in your package)
+/public/build
+/public/hot
+/storage/*.key
+/storage/pail
