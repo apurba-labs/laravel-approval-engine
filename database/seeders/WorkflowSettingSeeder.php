@@ -10,6 +10,19 @@ class WorkflowSettingSeeder extends Seeder
     public function run(): void
     {
         DB::table('workflow_settings')->insert([
+               [
+                'module' => 'requisition',
+                'role' => 'HOFA',
+                'frequency' => 'daily',
+                'weekly_day' => null, //Sunday
+                'monthly_date' => null,
+                'send_time' => '09:00:00',
+                'timezone' => 'Asia/Dhaka',
+                'last_run_at' => null,
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
             [
                 'module' => 'requisition',
                 'role' => 'HOSD',
@@ -24,7 +37,7 @@ class WorkflowSettingSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'module' => 'invoice',
+                'module' => 'requisition',
                 'role' => 'COO',
                 'frequency' => 'monthly',
                 'weekly_day' => null,

@@ -3,6 +3,7 @@ namespace ApurbaLabs\ApprovalEngine\Support;
 
 use ApurbaLabs\ApprovalEngine\Models\WorkflowBatch;
 use Illuminate\Support\Str;
+use ApurbaLabs\ApprovalEngine\Events\BatchApproved;
 
 class BatchProcessor
 {
@@ -28,5 +29,7 @@ class BatchProcessor
             'sent_at' => now(),
             'status' => 'sent'
         ]);
+
+        event(new BatchApproved($batch));
     }
 }

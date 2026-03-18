@@ -51,10 +51,6 @@ class WorkflowEngine
 
                 $module = app($class);
 
-                //dump("Module Class: " . get_class($module));
-                //dump("Expected Interface: ApurbaLabs\ApprovalEngine\Contracts\WorkflowModuleInterface");
-                //dump("Does it implement it? " . ($module instanceof \ApurbaLabs\ApprovalEngine\Contracts\WorkflowModuleInterface ? 'YES' : 'NO'));
-
                 if ($module instanceof WorkflowModuleInterface) {
                     $modules[] = $module;
                 }

@@ -3,24 +3,31 @@
 namespace ApurbaLabs\ApprovalEngine\Tests\Feature;
 
 use ApurbaLabs\ApprovalEngine\Tests\TestCase; 
-use Illuminate\Foundation\Testing\RefreshDatabase;
+//use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTransactions; 
 
 use ApurbaLabs\ApprovalEngine\Database\Seeders\WorkflowSeeder;
 use ApurbaLabs\ApprovalEngine\Engine\WorkflowEngine;
 use ApurbaLabs\ApprovalEngine\Contracts\WorkflowModuleInterface;
 use ApurbaLabs\ApprovalEngine\Enums\WorkflowStatus;
 
+
 use ApurbaLabs\ApprovalEngine\Models\WorkflowBatch;
 use ApurbaLabs\ApprovalEngine\Tests\Models\User;
 use ApurbaLabs\ApprovalEngine\Tests\Models\Requisition;
 
 use ApurbaLabs\ApprovalEngine\Tests\Modules\RequisitionModule;
+
+use Illuminate\Support\Facades\Mail;
+use ApurbaLabs\ApprovalEngine\Mail\BatchApprovalMail;
+
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
+
 class WorkflowCommandTest extends TestCase
 {
-    use RefreshDatabase;
+    use DatabaseTransactions;
 
     protected function setUp(): void
     {
@@ -150,24 +157,23 @@ class WorkflowCommandTest extends TestCase
     public function it_only_runs_weekly_batches_on_the_correct_day()
     {
         // Setup the Setting once (Monday, 09:00 AM)
-        \DB::table('workflow_settings')
-            ->where('role', 'HOSD')
-            ->where('module', 'requisition')
-            ->update([
+        DB::table('workflow_settings')->updateOrInsert(
+            ['role' => 'HOSD', 'module' => 'requisition'],
+            [
                 'frequency' => 'weekly',
                 'weekly_day' => 1, // Monday
                 'send_time' => '09:00:00',
                 'is_active' => true,
                 'last_run_at' => null,
                 'timezone' => 'Asia/Dhaka'
-            ]);
+            ]
+        );
 
         $user = User::create([
             'name' => 'Apurba', 'email' => 'a@test.com', 'password' => 'pass'
         ]);
 
-        // Test Sunday: Should NOT create a batch
-        // We travel to Sunday 10:00 AM
+        // Test Sunday: Should NOT create a batch for 'HOSD'
         $sunday = now()->startOfWeek()->subDay()->setHour(10);
         $this->travelTo($sunday);
 
@@ -180,10 +186,14 @@ class WorkflowCommandTest extends TestCase
         ]);
 
         $this->artisan('approval:send-batch');
-        $this->assertDatabaseMissing('workflow_batches', ['module' => 'requisition']);
+        // Assert specifically for 'HOSD'
+        $this->assertDatabaseMissing('workflow_batches', [
+            'module' => 'requisition',
+            'role' => 'HOSD'
+        ]);
 
 
-        //Test Monday: SHOULD create a batch
+        //Test Monday: SHOULD create a batch for 'HOSD'
         // We travel to Monday 10:00 AM
         $monday = now()->startOfWeek()->setHour(10);
         $this->travelTo($monday);
@@ -199,9 +209,56 @@ class WorkflowCommandTest extends TestCase
         $this->artisan('approval:send-batch');
         
         $this->assertDatabaseHas('workflow_batches', [
-            'module' => 'requisition'
+            'module' => 'requisition',
+            'role' => 'HOSD'
         ]);
     }
 
+    /** @test */
+    public function workflow_command_creates_batch_and_sends_email()
+    {
+        $this->withoutExceptionHandling(); 
+        //Fake the Mailer
+        Mail::fake();
+
+        // Set fixed time and prepare Data
+        $testTime = Carbon::create(2026, 3, 16, 10, 0, 0, 'Asia/Dhaka');
+        $this->travelTo($testTime);
+
+        $user = User::create([
+            'name' => 'Apurba',
+            'email' => 'apurbansingh@yahoo.com',
+            'password' => bcrypt('password'),
+        ]);
+
+        // Create an approved requisition within the daily window
+        Requisition::create([
+            'user_id' => $user->id,
+            'reference_id' => 'REQ-TEST-101',
+            'status' => 'approved',
+            'approved_at' => $testTime->copy()->subHour(),
+        ]);
+
+        // Ensure the setting is Active and due to run
+        DB::table('workflow_settings')->updateOrInsert(
+            ['module' => 'requisition', 'role' => 'HOSD'],
+            [
+                'frequency' => 'daily',
+                'send_time' => '09:00:00',
+                'is_active' => true,
+                'last_run_at' => null,
+                'timezone' => 'Asia/Dhaka'
+            ]
+        );
+
+        $this->artisan('approval:send-batch')->assertExitCode(0);
+
+        Mail::assertSent(BatchApprovalMail::class);
+
+        // 5. If the above passes, check the recipient count
+        Mail::assertSent(BatchApprovalMail::class, function ($mail) {
+            return $mail->hasTo('apurbansingh@yahoo.com');
+        });
+    }
 
 }

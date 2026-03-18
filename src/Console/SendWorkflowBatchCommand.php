@@ -34,18 +34,14 @@ class SendWorkflowBatchCommand extends Command
 
         foreach ($modules as $module) {
             $moduleName = $module->name(); 
-            dump(" Module Found: $moduleName");
             $this->info("Processing module: {$moduleName}");
 
             $settingsList = WorkflowSetting::where('module', $moduleName)
                 ->where('is_active', true)
                 ->get();
 
-            dump(" Settings Count: " . $settingsList->count());
-
             foreach ($settingsList as $settings) {
                 $shouldSendToday = $this->shouldSendToday($settings);
-                dump(" Should Run ($settings->role): " . ($shouldSendToday ? 'YES' : 'NO'));
                 
                 if (!$shouldSendToday) continue;
 
@@ -63,21 +59,13 @@ class SendWorkflowBatchCommand extends Command
                     $start,
                     $end
                 );
-                //dump("--- SQL QUERY LOG ---");
-                //dump(DB::getQueryLog()); // This shows the SQL, Bindings, and Time taken
-                //DB::disableQueryLog();
-                //dump("Records Found Count: " . $records->count());
 
                 if ($records->isEmpty()) {
-                    dump("   - Window Start: " . $window['start']->toDateTimeString());
-                    dump("   - Window End: " . $window['end']->toDateTimeString());
                     $this->line(" - No records found for this window.");
                     continue;
                 }
-                dump("Found " . $records->count() . " records for " . $module->name());
 
                 $stage = $stageResolver->getStage($moduleName, $settings->role);
-                dump("5. CREATING BATCH NOW for Stage: ". $stage);
 
                 try {
                     $batch = $processor->createBatch(
@@ -87,15 +75,11 @@ class SendWorkflowBatchCommand extends Command
                         $start,
                         $end
                     );
-                    dump("5. BATCH CREATED: ID " . $batch->id);
                     $processor->markSent($batch, $records->count());
-                    dump("6. BATCH MARKED AS SENT");
 
                 } catch (\Exception $e) {
                     dump("BATCH CREATION FAILED: " . $e->getMessage());
                 }
-                //Todo: Send Notification
-
                 $this->info("Batch created for module: {$moduleName}");
             }
         }

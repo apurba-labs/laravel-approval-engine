@@ -2,24 +2,14 @@
 
 namespace ApurbaLabs\ApprovalEngine\Tests;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
+//use Illuminate\Foundation\Testing\RefreshDatabase;
 use Orchestra\Testbench\TestCase as BaseTestCase;
 
 use ApurbaLabs\ApprovalEngine\ApprovalEngineServiceProvider;
 
 abstract class TestCase extends BaseTestCase
 {
-    use RefreshDatabase; // Handles migration and transactions automatically
-    /**
-     * Setup the test environment.
-     */
-    protected function setUp(): void
-    {
-        parent::setUp();
-        
-        // Run your Seeders after migrations are finished
-        $this->seed(\ApurbaLabs\ApprovalEngine\Database\Seeders\DatabaseSeeder::class);
-    }
+    //use RefreshDatabase; // Handles migration and transactions automatically
 
     /**
      * This is the "Testbench" way to load migrations. 
@@ -38,6 +28,17 @@ abstract class TestCase extends BaseTestCase
         if (is_dir(__DIR__ . '/migrations')) {
             $this->loadMigrationsFrom(__DIR__ . '/migrations');
         }
+    }
+
+    /**
+     * Setup the test environment.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        
+        // Run your Seeders after migrations are finished
+        $this->seed(\ApurbaLabs\ApprovalEngine\Database\Seeders\DatabaseSeeder::class);
     }
 
     /**
@@ -89,6 +90,12 @@ abstract class TestCase extends BaseTestCase
             'strict'    => true,
             'engine'    => 'InnoDB', 
         ]);
+
+
+        // Ensure web middleware is present
+        $app['router']->aliasMiddleware('auth', \Illuminate\Auth\Middleware\Authenticate::class);
+
+
     }
 
 }

@@ -30,7 +30,7 @@ return new class extends Migration
 
             $table->timestamp('sent_at')->nullable();
 
-            $table->timestamp('acknowledged_at')->nullable();
+            $table->timestamp('completed_at')->nullable();
 
             $table->integer('reminder_count')->default(0);
 
