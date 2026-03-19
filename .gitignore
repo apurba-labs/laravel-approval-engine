@@ -37,3 +37,7 @@ example/laravel-demo/.env
 example/laravel-demo/node_modules
 example/laravel-demo/storage/logs/
 example/laravel-demo/bootstrap/cache/
+composer.lock
+example/laravel-demo/app/
+example/laravel-demo/storage/
+example/laravel-demo/.env
