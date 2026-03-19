@@ -1,95 +1,196 @@
 # Laravel Approval Engine
 
-A flexible **batch-based approval workflow engine** for Laravel applications.
+[![Laravel](https://img.shields.io/badge/Laravel-10.x-red?logo=laravel)](https://laravel.com/)
+[![PHP](https://img.shields.io/badge/PHP-8.2-blue?logo=php)](https://www.php.net/)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/apurba-labs/laravel-approval-engine?style=social)](https://github.com/apurba-labs/laravel-approval-engine/stargazers)
 
-Instead of sending approval emails per record, this engine groups records into **approval batches** and supports **multi-stage workflows**.
+A modular, batch-based, multi-stage approval workflow engine for Laravel.
+Designed for **real-world enterprise workflows** -- Supports batch approvals, email-based approval links, and configurable workflow stages.
+
+---
+## 🔥 Why This Package Exists
+In most Laravel projects:
+- • Approval workflows are rebuilt again and again
+- • Logic gets tightly coupled with business models
+- • Email spam happens (1 record = 1 email 😓)
+
+👉 This package solves that with a clean, scalable architecture
 
 ---
 
-## Features
+## Key Features
 
-✔ Batch approval emails (20 records → 1 email)
-✔ Multi-stage workflow approvals
-✔ Token-based approval links
-✔ Smart reminder engine
-✔ Config-driven workflow modules
-✔ Email / Slack / Teams notifications
-✔ Plugin-based module architecture
-
----
-
-## Example Workflow
-
-```
-Requisition Approved
-        ↓
-Batch created
-        ↓
-Email sent to HOS
-        ↓
-HOS Approves
-        ↓
-Move to COO
-        ↓
-COO Approves
-        ↓
-Completed
-```
+- ✔ **Multi-stage** approval workflows
+- ✔ **Batch processing** (20 approvals → 1 email)
+- ✔ **Email-based** approval links
+- ✔ **Modular** workflow system (plug & play)
+- ✔ **Event-driven** architecture
+- ✔ **No hard dependency** on roles system
+- ✔ **Clean architecture** (Engine + Actions + Support)
 
 ---
 
-## Installation
+## 🧠 Example Workflows
 
-Install via composer:
+- Requisition → HOS → COO → Completed
+- Invoice → Manager → Finance → CFO
+- Purchase → Supervisor → Director
+
+---
+
+## 🏗 How It Works
+
+Approved Records
+        ↓
+Batch Created
+        ↓
+Email Sent (1 batch)
+        ↓
+User Clicks Approval Link
+        ↓
+Next Stage Triggered
+        ↓
+Workflow Completed
+
+---
+## 📊 Workflow Flow
+
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '12px'}, 'flowchart': {'useMaxWidth': true }}}%%
+graph TD
+    A[Batch Sent] --> B[Wait 24 Hours]
+    B --> C{Approved?}
+    C -- No --> D[Send Reminder]
+    D --> E[Wait Again]
+    E --> F{Still Pending?}
+    F -- Yes --> G[Escalate to Higher Role]
 
 ```
-composer require apurba-labs/laravel-approval-engine
+
+---
+## ⏱ Escalation & Reminder Flow
+
+```mermaid
+%%{init: { 'theme': 'base', 'themeVariables': { 'nodeTextColor': '#000000' }}}%%
+graph TD
+    A[Batch Sent] --> B[Wait 24 Hours]
+    B --> C{Approved?}
+    C -- No --> D[Send Reminder]
+    D --> E[Wait Again]
+    E --> F{Still Pending?}
+    F -- Yes --> G[Escalate to Higher Role]
+
+    style C fill:#fff4dd,stroke:#d4a017
+    style F fill:#fff4dd,stroke:#d4a017
+    style G fill:#f8d7da,stroke:#721c24,stroke-width:2px
 ```
 
-Publish config and migrations:
 
-```
-php artisan vendor:publish --tag=approval-config
-```
+---
 
-Run migrations:
+## 🚀 Quick Demo (2 Minutes)
 
-```
+```bash
+git clone https://github.com/apurba-labs/laravel-approval-engine
+
+cd laravel-approval-engine/example/laravel-demo
+
+composer install
+cp .env.example .env
+php artisan key:generate
+
 php artisan migrate
+php artisan approval:demo
+```
+👉 Output:
+
+```pgsql
+
+- ✔ Sample data created
+- ✔ Batch generated
+- ✔ Approval link generated
+
+```
+## 📸 Demo Screenshot
+![Workflow](./docs/demo.png)
+---
+
+## ⚙️ Installation
+
+
+```bash
+composer require apurba-labs/laravel-approval-engine
+
 ```
 
 ---
 
-## Configuration
+## 🔧 Publish Config, Migrations & Seeders
 
-Edit config file:
-
-```
-config/approval-engine.php
-```
-
-Example module:
+```bash
+php artisan vendor:publish --tag=approval-config
+php artisan migrate
+php artisan db:seed --class="ApurbaLabs\ApprovalEngine\Database\Seeders\WorkflowSeeder"
+php artisan db:seed --class="ApurbaLabs\ApprovalEngine\Database\Seeders\WorkflowSettingSeeder"
 
 ```
-'requisition' => [
 
-    'model' => App\Models\Requisition::class,
+---
 
-    'approved_column' => 'approved_at',
+## 🧩 Create Workflow Module
 
-    'relations' => [
-        'depot',
-        'distributor',
-        'shop'
-    ],
+```bash
+php artisan make:workflow-module Requisition
+```
+### 🧠 Define Module
 
-    'display_columns' => [
-        'reference_id' => 'Reference',
-        'depot.name' => 'Depot',
-        'distributor.name' => 'Distributor'
-    ]
+```php
+class RequisitionModule extends BaseWorkflowModule
+{
+    public function model(): string
+    {
+        return \App\Models\Requisition::class;
+    }
 
-]
+    public function approvedColumn(): string
+    {
+        return 'approved_at';
+    }
+    
+    public function statusColumn(): string
+    {
+        return 'status';
+    }
+
+    public function relations(): array
+    {
+        return ['user'];
+    }
+
+    public function selectColumns(): array
+    {
+         return [
+            'id',
+            'user_id',
+            'reference_id',
+            'stage',
+            'stage_status',
+            'status',
+            'approved_at',
+        ];
+    }
+
+    public function displayColumns(): array
+    {
+        return [
+            'reference_id' => 'Reference',
+            'user.name' => 'Requested By',
+        ];
+    }
+}
+
+
 ```
 
 ---
@@ -115,47 +216,78 @@ Example cron job:
 Emails contain secure token-based approval links:
 
 ```
-/approvals/batch/{token}
+/approval/batch/{token}
 ```
-
 Approvers can:
 
-• Approve All
-• Reject
-• View Details
+- • Approve All
+- • Reject
+- • View Details
 
 ---
+## 🧠 Architecture
 
-## Creating Workflow Modules
+### System Layering Overview
 
-Generate a new module:
+```mermaid
+%%{init: { 'theme': 'base', 'themeVariables': { 'primaryColor': '#e1f5fe', 'nodeTextColor': '#000000', 'mainBkg': '#e1f5fe', 'lineColor': '#333' }}}%%
+graph TD
+    A[Artisan Command] --> B[WorkflowEngine]
+    B --> C[Actions Layer]
+    
+    subgraph Core
+    C --> D[BatchProcessor]
+    D --> E[StageResolver]
+    end
+    
+    E --> F[Events]
+    F --> G[Notifications]
 
-```
-php artisan make:workflow-module SalesOrder
+    %% Styles
+    classDef blackText color:#000000,stroke:#333,stroke-width:1px;
+    class A,B,C,D,E,F,G blackText;
+    
+    style B fill:#e1f5fe
+    style D fill:#fff3e0
+    style E fill:#f3e5f5
+    style G fill:#e8f5e9
 ```
 
 ---
-
 ## Roadmap
 
 ### v1.0
 
-✔ Batch processing
-✔ Email notifications
-✔ Multi-stage approvals
-
-### v1.1
-
-✔ Reminder engine
-✔ Slack notifications
+- ✔ Batch processing
+- ✔ Email notifications
+- ✔ Modular workflows
 
 ### v2.0
 
-✔ Visual workflow builder
-✔ Approval dashboard
+- 🔜 Reminder engine
+- 🔜 Slack / Teams integration
+- 🔜 Escalation rules
+
+### v3.0
+
+- 🔜 Workflow UI builder
+- 🔜 API support
+- 🔜 Multi-tenant SaaS
 
 ---
+## 🤝 Contributing
 
+PRs are welcome.
+
+---
+## ⭐ Support
+
+If this project helps you:
+
+- 👉 Give it a star ⭐
+- 👉 Share with your team
+
+---
 ## License
 
 MIT License
