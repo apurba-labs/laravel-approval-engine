@@ -1,1 +1,7 @@
+.phpunit.result.cache
 /vendor
+/example/laravel-demo/vendor
+/example/laravel-demo/storage
+/example/laravel-demo/bootstrap/cache
+/example/laravel-demo/.env
+composer.lock
