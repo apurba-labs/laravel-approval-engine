@@ -1,5 +1,8 @@
 # Laravel Approval Engine
 
+[Contributing](CONTRIBUTING.md) | [Changelog](CHANGELOG.md) | [Architecture](ARCHITECTURE.md)
+
+
 A modular, extensible multi-stage approval workflow engine for Laravel. It handles complex batching logic, scheduled email notifications, and token-based approval links with zero overhead.
 
 ---
@@ -182,15 +185,17 @@ or
 ```
 ./vendor/bin/phpunit
 ```
-Test Include:
-The engine is backed by a comprehensive test suite covering 12 Feature Tests and 21 Assertions:
-Batch Creation: Validates unique token generation and WorkflowBatch persistence.
-Workflow Services: Tests the StageResolver and BatchWindowResolver for multi-stage transitions.
-Module Discovery: Confirms the engine's ability to auto-load modules from app/Workflow/Modules.
-Command Execution: Verifies the approval:send-batch logic against Daily, Weekly, and Monthly schedules.
-Event-Driven Logic: Asserts that BatchApproved events correctly trigger the BatchApprovalMail.
-Audit Integrity: Ensures BatchItems are accurately mapped to records for a full audit trail.
-Database Compatibility: Fully tested on both MySQL and SQLite (In-Memory).
+### ✅ Verified Test Suite
+
+The engine is backed by a comprehensive test suite covering **12 Feature Tests** and **21 Assertions**:
+
+*   **Batch Creation**: Validates unique token generation and `WorkflowBatch` persistence.
+*   **Workflow Services**: Tests the `StageResolver` and `BatchWindowResolver` for multi-stage transitions.
+*   **Module Discovery**: Confirms the engine's ability to auto-load modules from `app/Workflow/Modules`.
+*   **Command Execution**: Verifies the `approval:send-batch` logic against Daily, Weekly, and Monthly schedules.
+*   **Event-Driven Logic**: Asserts that `BatchApproved` events correctly trigger the `BatchApprovalMail`.
+*   **Audit Integrity**: Ensures `BatchItems` are accurately mapped to records for a full audit trail.
+*   **Database Compatibility**: Fully tested on both **MySQL** and **SQLite** (In-Memory).
 
 ---
 ## 🚀 Example Demo Project
