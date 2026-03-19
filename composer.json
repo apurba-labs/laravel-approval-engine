@@ -5,7 +5,8 @@
   "license": "MIT",
   "autoload": {
     "psr-4": {
-      "ApurbaLabs\\ApprovalEngine\\": "src/"
+      "ApurbaLabs\\ApprovalEngine\\": "src/",
+      "ApurbaLabs\\ApprovalEngine\\Database\\Seeders\\": "database/seeders/"
     }
   },
   "autoload-dev": {
@@ -22,10 +23,10 @@
   },
   "require": {
     "php": "^8.1",
-    "illuminate/support": "^10.0|^11.0"
+    "illuminate/support": "^10.0|^11.0|^12.0|^13.0"
   },
   "require-dev": {
-     "orchestra/testbench": "^8.0|^9.0",
+     "orchestra/testbench": "*",
      "phpunit/phpunit": "^10.0"
   }
 }

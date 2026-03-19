@@ -1,0 +1,90 @@
+<?php
+
+namespace ApurbaLabs\ApprovalEngine\Console;
+
+use Illuminate\Console\Command;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\File;
+
+class MakeWorkflowModule extends Command
+{
+    protected $signature = 'make:workflow-module {name}';
+
+    protected $description = 'Create a new workflow module';
+
+    public function handle()
+    {
+        $name = $this->argument('name');
+
+        $className = Str::studly($name).'Module';
+        
+        File::ensureDirectoryExists(
+            app_path('Workflow/Modules')
+        );
+        $path = app_path("Workflow/Modules/{$className}.php");
+
+        if(File::exists($path)){
+            $this->error("Module already exists!");
+            return;
+        }
+
+        $stub = <<<PHP
+<?php
+
+namespace App\Workflow\Modules;
+
+use ApurbaLabs\ApprovalEngine\Modules\BaseWorkflowModule;
+use Illuminate\Database\Eloquent\Builder;
+
+class {$className} extends BaseWorkflowModule
+{
+
+    public function model():string
+    {
+        // return \App\Models\SalesOrder::class;
+    }
+
+    public function statusColumn(): string
+    {
+        return 'status';
+    }
+
+    public function approvedColumn(): string
+    {
+        return 'approved_at';
+    }
+
+    public function relations(): array
+    {
+        return [
+            // 'customer', 'items'
+        ];
+    }
+    public function selectColumns(): array
+    {
+         return [
+            // 'id', 'user_id', 'reference_id', 'stage', 'stage_status', 'status', 'approved_at',
+        ];
+    }
+
+    public function displayColumns(): array
+    {
+        return [
+            // 'order_no' => 'Order No',
+            // 'amount' => 'Amount'
+        ];
+    }
+
+    public function query(): Builder
+    {
+        return \$this->model()::query();
+    }
+
+}
+PHP;
+
+        File::put($path,$stub);
+
+        $this->info("Workflow module created: {$className}");
+    }
+}

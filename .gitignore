@@ -41,3 +41,10 @@ composer.lock
 example/laravel-demo/app/
 example/laravel-demo/storage/
 example/laravel-demo/.env
+.phpunit.result.cache
+/vendor
+/example/laravel-demo/vendor
+/example/laravel-demo/storage
+/example/laravel-demo/bootstrap/cache
+/example/laravel-demo/.env
+composer.lock
