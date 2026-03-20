@@ -6,13 +6,45 @@ use ApurbaLabs\ApprovalEngine\Contracts\WorkflowModuleInterface;
 use ApurbaLabs\ApprovalEngine\Actions\ApproveBatchAction;
 use ApurbaLabs\ApprovalEngine\Actions\FetchApprovedRecordsAction;
 use ApurbaLabs\ApprovalEngine\Actions\MoveToNextStageAction;
+use ApurbaLabs\ApprovalEngine\Events\WorkflowStarted;
+use ApurbaLabs\ApprovalEngine\Models\WorkflowBatch;
 
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Str;
 use RuntimeException;
 
 class WorkflowEngine
 {
+    public function start($module, array $data): Collection
+    {
+        // Resolve module instance
+        $moduleInstance = is_string($module) ? $this->getModule($module) : $module;
+
+        // Create workflow batch
+        $workflow = new WorkflowBatch();
+        $workflow->module = $moduleInstance->name();
+
+        // Fill dynamic data (amount, total_amount, etc.)
+        foreach ($data as $key => $value) {
+            $workflow->$key = $value;
+        }
+
+        $workflow->current_stage_order = 1; // initial stage
+        $workflow->save();
+
+        // Resolve dynamic stages (V1.2)
+        $resolver = app(config('approval-engine.stage_resolver'));
+        $stages = $resolver->resolve($workflow, $workflow->stages_array ?? []);
+
+        $workflow->stages_array = $stages;
+        $workflow->save();
+
+        // Fire event (single workflow)
+        event(new WorkflowStarted($workflow));
+
+        return $workflow;
+    }
     /**
      * Resolve the module class from config and ensure it implements the interface.
      */
@@ -64,7 +96,7 @@ class WorkflowEngine
     /**
      * Get records that have completed the approval process.
      */
-    public function getApprovedRecords(string $module, $start, $end): Collection
+    public function getApprovedRecords(string $module, $start, $end): EloquentCollection
     {
         $moduleInstance = is_string($module) ? $this->getModule($module) : $module;
 
@@ -72,12 +104,12 @@ class WorkflowEngine
             ->execute($moduleInstance, $start, $end);
     }
 
-    public function approveBatch($token, $userId)
+    public function approveBatch($token, $userId): EloquentCollection
     {
         return app(ApproveBatchAction::class)
             ->execute($token, $userId);
     }
-    protected function moveToNextStage($batch,$stage)
+    protected function moveToNextStage($batch,$stage): EloquentCollection 
     {
 
         return app(MoveToNextStageAction::class)

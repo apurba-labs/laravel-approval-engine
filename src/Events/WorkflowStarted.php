@@ -12,37 +12,43 @@ class WorkflowStarted
     use Dispatchable, SerializesModels;
 
     /**
-     * @var WorkflowBatch|Collection  Single or multiple workflow(s)
+     * @var WorkflowBatch|Collection
      */
     public $workflows;
 
     /**
-     * Create a new event instance.
-     *
+     * Track if this was intended as a batch start
+     */
+    protected bool $wasBatch;
+
+    /**
      * @param WorkflowBatch|Collection $workflows
      */
     public function __construct($workflows)
     {
         $this->workflows = $workflows;
+        
+        // Explicitly detect if it started as a collection
+        $this->wasBatch = $workflows instanceof Collection;
     }
 
     /**
-     * Check if this event contains a batch of workflows.
-     *
-     * @return bool
+     * Check if this event was triggered as a batch.
      */
     public function isBatch(): bool
     {
-        return $this->workflows instanceof Collection;
+        return $this->wasBatch;
     }
 
     /**
-     * Always return a Collection of workflows, even if single.
-     *
-     * @return Collection
+     * Normalizes the output so Listeners can always loop safely.
      */
-    public function workflows(): Collection
+    public function getWorkflows(): Collection
     {
-        return $this->isBatch() ? $this->workflows : collect([$this->workflows]);
+        if ($this->workflows instanceof Collection) {
+            return $this->workflows;
+        }
+
+        return collect([$this->workflows]);
     }
 }
