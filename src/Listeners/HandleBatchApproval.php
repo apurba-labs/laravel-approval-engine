@@ -5,7 +5,8 @@ namespace ApurbaLabs\ApprovalEngine\Listeners;
 use ApurbaLabs\ApprovalEngine\Events\BatchApproved;
 use Illuminate\Support\Facades\Mail;
 use ApurbaLabs\ApprovalEngine\Mail\BatchApprovalMail;
-use ApurbaLabs\ApprovalEngine\Engine;
+use ApurbaLabs\ApprovalEngine\Engine\WorkflowEngine;
+
 class HandleBatchApproval
 {
     public function handle(BatchApproved $event)
