@@ -56,14 +56,18 @@ graph TD
 ## 📊 Workflow Flow
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '12px'}, 'flowchart': {'useMaxWidth': true }}}%%
 graph TD
-    A[Batch Sent] --> B[Wait 24 Hours]
-    B --> C{Approved?}
-    C -- No --> D[Send Reminder]
-    D --> E[Wait Again]
-    E --> F{Still Pending?}
-    F -- Yes --> G[Escalate to Higher Role]
+    A[Approved Records] --> B[Batch Created]
+    B --> C[Email Sent]
+    C --> D[User Clicks Approval Link]
+    D --> E[Stage Resolver]
+    E --> F{Next Stage?}
+    F -- Yes --> G[Create Next Batch]
+    G --> H[Send Next Approval]
+    F -- No --> I[Workflow Completed]
+    
+    style F fill:#f9f,stroke:#333,stroke-width:2px
+    style I fill:#dfd,stroke:#333,stroke-width:2px
 
 ```
 
