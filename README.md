@@ -106,9 +106,9 @@ php artisan approval:demo
 
 ```pgsql
 
-- ✔ Sample data created
-- ✔ Batch generated
-- ✔ Approval link generated
+✔ Sample data created
+✔ Batch generated
+✔ Approval link generated
 
 ```
 ## 📸 Demo Screenshot
@@ -219,9 +219,9 @@ Emails contain secure token-based approval links:
 ```
 Approvers can:
 
-- • Approve All
-- • Reject
-- • View Details
+- Approve All
+- Reject
+- View Details
 
 ---
 ## 🧠 Architecture
@@ -261,22 +261,30 @@ php artisan approval:status
 ```
 Example Output:
 
-- ✔ Batch processing
-- ✔ Email notifications
-- ✔ Modular workflows
+✔ Batch processing <br />
+✔ Email notifications <br />
+✔ Modular workflows
 
 ---
 ## 🚀 Roadmap
 
-- 🔜 Reminder engine
-- 🔜 Slack / Teams integration
-- 🔜 Escalation rules
+### v1.0
+
+✔ Batch processing \
+✔ Email approvals \
+✔ Modular workflows
+
+### v2.0
+
+🔜 Reminder engine \
+🔜 Slack / Teams integration \
+🔜 Escalation rules
 
 ### v3.0
 
-- 🔜 Workflow UI builder
-- 🔜 API support
-- 🔜 Multi-tenant SaaS
+🔜 Workflow UI builder <br />
+🔜 API support <br />
+🔜 Multi-tenant SaaS
 
 This project demonstrates:
 * **Requisition Approval Workflow**: A real-world implementation of the engine.
