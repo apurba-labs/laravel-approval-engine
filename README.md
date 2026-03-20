@@ -41,6 +41,7 @@ In most Laravel projects:
 
 ## 🏗 How It Works
 
+```mermaid
 graph TD
     A[Approved Records] --> B[Batch Created]
     B --> C[Email Sent]
@@ -50,7 +51,7 @@ graph TD
 
     style A fill:#f9f9f9,stroke:#333
     style F fill:#d4edda,stroke:#28a745,stroke-width:2px
-
+```
 ---
 ## 📊 Workflow Flow
 
