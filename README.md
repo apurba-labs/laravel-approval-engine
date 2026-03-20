@@ -11,9 +11,9 @@ Designed for **real-world enterprise workflows** -- Supports batch approvals, em
 ---
 ## 🔥 Why This Package Exists
 In most Laravel projects:
-- • Approval workflows are rebuilt again and again
-- • Logic gets tightly coupled with business models
-- • Email spam happens (1 record = 1 email 😓)
+- Approval workflows are rebuilt again and again
+- Logic gets tightly coupled with business models
+- Email spam happens (1 record = 1 email 😓)
 
 👉 This package solves that with a clean, scalable architecture
 
@@ -21,13 +21,13 @@ In most Laravel projects:
 
 ## Key Features
 
-- ✔ **Multi-stage** approval workflows
-- ✔ **Batch processing** (20 approvals → 1 email)
-- ✔ **Email-based** approval links
-- ✔ **Modular** workflow system (plug & play)
-- ✔ **Event-driven** architecture
-- ✔ **No hard dependency** on roles system
-- ✔ **Clean architecture** (Engine + Actions + Support)
+- **Multi-stage** approval workflows
+- **Batch processing** (20 approvals → 1 email)
+- **Email-based** approval links
+- **Modular** workflow system (plug & play)
+- **Event-driven** architecture
+- **No hard dependency** on roles system
+- **Clean architecture** (Engine + Actions + Support)
 
 ---
 
@@ -41,17 +41,15 @@ In most Laravel projects:
 
 ## 🏗 How It Works
 
-Approved Records
-        ↓
-Batch Created
-        ↓
-Email Sent (1 batch)
-        ↓
-User Clicks Approval Link
-        ↓
-Next Stage Triggered
-        ↓
-Workflow Completed
+graph TD
+    A[Approved Records] --> B[Batch Created]
+    B --> C[Email Sent]
+    C --> D[User Clicks Approval Link]
+    D --> E[Next Stage Triggered]
+    E --> F[Workflow Completed]
+
+    style A fill:#f9f9f9,stroke:#333
+    style F fill:#d4edda,stroke:#28a745,stroke-width:2px
 
 ---
 ## 📊 Workflow Flow
@@ -255,7 +253,6 @@ graph TD
 This will generate a module structure ready for workflow integration.
 
 ---
-## Roadmap
 
 ## Check Pending Batches
 ```
@@ -268,7 +265,7 @@ Example Output:
 - ✔ Modular workflows
 
 ---
-## 🚀 Example Demo Project
+## 🚀 Roadmap
 
 - 🔜 Reminder engine
 - 🔜 Slack / Teams integration
