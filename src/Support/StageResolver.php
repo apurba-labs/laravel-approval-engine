@@ -2,9 +2,15 @@
 namespace ApurbaLabs\ApprovalEngine\Support;
 
 use ApurbaLabs\ApprovalEngine\Models\WorkflowStage;
+use ApurbaLabs\ApprovalEngine\Contracts\StageResolverInterface;
 
-class StageResolver
+class StageResolver implements StageResolverInterface
 {
+    public function resolve($model, array $stages): array
+    {
+        return $stages; // default behavior
+    }
+    
     public function getStage(string $module, string $role): int
     {
         $moduleName = is_string($module) ? $module : $module->name();
