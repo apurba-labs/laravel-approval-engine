@@ -96,7 +96,7 @@ abstract class BaseWorkflowModule implements WorkflowModuleInterface
     /**
      * Allow developers to add extra relations (like 'items' or 'department').
      */
-    protected function customRelations(): array
+    public function customRelations(): array
     {
         return [];
     }

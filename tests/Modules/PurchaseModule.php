@@ -34,7 +34,7 @@ class PurchaseModule extends BaseWorkflowModule
         return ['creator'];
     }
 
-    protected function customRelations(): array
+    public function customRelations(): array
     {
         return []; 
     }

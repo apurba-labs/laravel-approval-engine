@@ -156,20 +156,50 @@ class RequisitionModule extends BaseWorkflowModule
         return \App\Models\Requisition::class;
     }
 
+    /**
+     * Validate records before they enter a batch.
+     * Useful for checking data integrity or custom business rules.
+     */
+    public function validate(array $data): void
+    {
+        // Default: No validation required
+        validator($data, [
+            'total_amount' => 'required|numeric|min:1',
+            'user_id' => 'required|exists:users,id',
+        ])->validate();
+    }
+
     public function approvedColumn(): string
     {
         return 'approved_at';
     }
     
+    /**
+     * Default status column name. 
+     * Override this in the child class if it differs.
+     */
     public function statusColumn(): string
     {
         return 'status';
     }
 
-    public function relations(): array
+    /**
+     * Default priorities: check for 'user', then 'creator'.
+     * Individual modules can override this.
+     */
+    public function ownerRelations(): array
     {
-        return ['user'];
+        return ['user', 'creator'];
     }
+
+    /**
+     * Allow developers to add extra relations (like 'items' or 'department').
+     */
+    protected function customRelations(): array
+    {
+        return [];
+    }
+
 
     public function selectColumns(): array
     {

@@ -43,6 +43,15 @@ class {$className} extends BaseWorkflowModule
     {
         // return \App\Models\SalesOrder::class;
     }
+    
+    /**
+     * Validate records before they enter a batch.
+     * Useful for checking data integrity or custom business rules.
+     */
+    public function validate(array $data): void
+    {
+        // Default: No validation required
+    }
 
     public function statusColumn(): string
     {
@@ -65,7 +74,7 @@ class {$className} extends BaseWorkflowModule
         ];
     }
 
-    protected function customRelations(): array
+    public function customRelations(): array
     {
         return [
             //'items', 'attachments'

@@ -46,7 +46,7 @@ class RequisitionModule extends BaseWorkflowModule
         ));
     }
 
-    protected function customRelations(): array
+    public function customRelations(): array
     {
         return []; 
     }

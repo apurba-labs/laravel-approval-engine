@@ -42,17 +42,16 @@ interface WorkflowModuleInterface
     public function ownerRelations(): array;
 
     /**
+     * Allow developers to add extra relations (like 'items' or 'department').
+     */
+    public function customRelations(): array;
+    /**
      * The column name that tracks the approval state (e.g., 'is_approved').
      */
     public function approvedColumn(): string;
 
      /** The state column (status) */
     public function statusColumn(): string;
-
-    /**
-     * Relationships that should be eager-loaded to avoid N+1 issues.
-     */
-    public function relations(): array;
 
     /** Columns to fetch from DB: ['id', 'amount', 'user_id'] */
     public function selectColumns(): array;
