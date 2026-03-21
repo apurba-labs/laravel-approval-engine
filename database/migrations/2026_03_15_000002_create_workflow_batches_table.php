@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->string('role')->comment('Role for which this batch applies');
             $table->string('module');
-            $table->integer('stage');
+            $table->integer('current_stage_order');
             $table->string('token')->unique();
             $table->json('payload')->nullable(); 
             $table->timestamp('window_start');
