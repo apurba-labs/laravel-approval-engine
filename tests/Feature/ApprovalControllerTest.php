@@ -20,7 +20,7 @@ class ApprovalControllerTest extends TestCase
         $batch = WorkflowBatch::create([
             'module' => 'requisition',
             'role' => 'HOSD',
-            'token' => 'secure-token-123',
+            'token' => 'secure-token-12345',
             'stage' => 1,
             'window_start' => now(),
             'window_end' => now(),
@@ -30,7 +30,7 @@ class ApprovalControllerTest extends TestCase
         $this->mock(WorkflowEngine::class, function (MockInterface $mock) use ($batch) {
             $mock->shouldReceive('approveBatch')
                 ->once()
-                ->with('secure-token-123', 1); // Token and UserID
+                ->with('secure-token-12345', 1); // Token and UserID
         });
         $user = User::create([
                 'name' => 'Apurba',

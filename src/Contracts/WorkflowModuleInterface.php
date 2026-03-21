@@ -21,6 +21,27 @@ interface WorkflowModuleInterface
     public function model(): string;
 
     /**
+     * Get workflow settings for the module.
+     * 
+     * @param string|null $role
+     * @return \Illuminate\Support\Collection|\ApurbaLabs\ApprovalEngine\Models\WorkflowSetting|null
+     */
+    public function getSettings(?string $role = null);
+
+    /**
+     * Validate data before batching.
+     * 
+     * @param array $data
+     * @throws \Exception
+     */
+    public function validate(array $data): void;
+
+    /**
+     * Define the priority list of relationship names that represent the owner.
+     */
+    public function ownerRelations(): array;
+
+    /**
      * The column name that tracks the approval state (e.g., 'is_approved').
      */
     public function approvedColumn(): string;

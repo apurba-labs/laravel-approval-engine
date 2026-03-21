@@ -28,6 +28,7 @@ abstract class TestCase extends BaseTestCase
         if (is_dir(__DIR__ . '/migrations')) {
             $this->loadMigrationsFrom(__DIR__ . '/migrations');
         }
+
     }
 
     /**
