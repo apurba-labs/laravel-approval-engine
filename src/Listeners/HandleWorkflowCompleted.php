@@ -4,10 +4,10 @@ namespace ApurbaLabs\ApprovalEngine\Listeners;
 
 use ApurbaLabs\ApprovalEngine\Events\WorkflowCompleted;
 use Illuminate\Support\Facades\Mail;
-use ApurbaLabs\ApprovalEngine\Mail\WorkflowFinalizedMail;
+//use ApurbaLabs\ApprovalEngine\Mail\WorkflowFinalizedMail;
 use App\Models\User;
 
-class HandleWorkflowCompletion
+class HandleWorkflowCompleted
 {
     public function handle(WorkflowCompleted $event)
     {

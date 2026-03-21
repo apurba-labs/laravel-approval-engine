@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Mail;
 use ApurbaLabs\ApprovalEngine\Mail\BatchApprovalMail;
 use ApurbaLabs\ApprovalEngine\Engine\WorkflowEngine;
 
-class HandleBatchApproval
+class HandleBatchApproved
 {
     public function handle(BatchApproved $event)
     {

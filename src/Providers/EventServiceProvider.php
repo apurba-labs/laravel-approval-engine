@@ -8,8 +8,8 @@ use ApurbaLabs\ApprovalEngine\Events\BatchApproved;
 use ApurbaLabs\ApprovalEngine\Events\WorkflowCompleted;
 use ApurbaLabs\ApprovalEngine\Events\WorkflowRejected;
 use ApurbaLabs\ApprovalEngine\Listeners\HandleWorkflowStarted;
-use ApurbaLabs\ApprovalEngine\Listeners\HandleBatchApproval;
-use ApurbaLabs\ApprovalEngine\Listeners\HandleWorkflowCompletion;
+use ApurbaLabs\ApprovalEngine\Listeners\HandleBatchApproved;
+use ApurbaLabs\ApprovalEngine\Listeners\HandleWorkflowCompleted;
 use ApurbaLabs\ApprovalEngine\Listeners\HandleWorkflowRejection;
 
 class EventServiceProvider extends ServiceProvider
@@ -24,10 +24,10 @@ class EventServiceProvider extends ServiceProvider
             HandleWorkflowStarted::class,
         ],
         BatchApproved::class => [
-            HandleBatchApproval::class,
+            HandleBatchApproved::class,
         ],
         WorkflowCompleted::class => [
-            HandleWorkflowCompletion::class,
+            HandleWorkflowCompleted::class,
         ],
         WorkflowRejected::class => [
             HandleWorkflowRejection::class,
