@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::create('workflow_batches', function (Blueprint $table) {
             $table->id();
-            $table->string('role')->comment('Role for which this batch applies');
             $table->string('module');
             $table->integer('current_stage_order');
             $table->string('token')->unique();
