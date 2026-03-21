@@ -46,6 +46,6 @@ class WorkflowBatch extends Model
 
     protected static function newFactory(): Factory
     {
-        return WorkflowBatchFactory::new();
+        return \ApurbaLabs\ApprovalEngine\Tests\Factories\WorkflowBatchFactory::new();
     }
 }

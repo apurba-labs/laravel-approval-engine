@@ -9,11 +9,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('workflow_batches', function (Blueprint $table) {
+
             $table->id();
             $table->string('module');
-            $table->integer('current_stage_order');
+            $table->string('role')->comment('Role for which this batch applies');
+            $table->integer('stage');
             $table->string('token')->unique();
-            $table->json('payload')->nullable(); 
             $table->timestamp('window_start');
             $table->timestamp('window_end');
             $table->integer('item_count')->default(0);

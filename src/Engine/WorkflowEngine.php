@@ -3,11 +3,15 @@
 namespace ApurbaLabs\ApprovalEngine\Engine;
 
 use ApurbaLabs\ApprovalEngine\Contracts\WorkflowModuleInterface;
+
 use ApurbaLabs\ApprovalEngine\Actions\ApproveBatchAction;
 use ApurbaLabs\ApprovalEngine\Actions\FetchApprovedRecordsAction;
 use ApurbaLabs\ApprovalEngine\Actions\MoveToNextStageAction;
 use ApurbaLabs\ApprovalEngine\Events\WorkflowStarted;
+
 use ApurbaLabs\ApprovalEngine\Models\WorkflowBatch;
+
+use ApurbaLabs\ApprovalEngine\Support\StageResolver;
 
 use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
@@ -18,32 +22,43 @@ class WorkflowEngine
 {
     public function start($module, array $data): Collection
     {
+        $stageResolver = app(StageResolver::class);
         // Resolve module instance
         $moduleInstance = is_string($module) ? $this->getModule($module) : $module;
 
-        // Create workflow batch
-        $workflow = new WorkflowBatch();
-        $workflow->module = $moduleInstance->name();
+        $moduleName = $moduleInstance->name();
+        //dump("Batch validation failed for: " . $moduleName);
+        try {
+            $moduleInstance->validate($data);
 
-        // Fill dynamic data (amount, total_amount, etc.)
-        foreach ($data as $key => $value) {
-            $workflow->$key = $value;
+            $stageResolver = app(StageResolver::class);
+            $firstStage = $stageResolver->getFirstStage($moduleName);
+
+            $workflow = new WorkflowBatch();
+            $workflow->module = $moduleName;
+            $workflow->role = $firstStage->role?? 'Admin';
+            $workflow->token = WorkflowBatch::generateToken();
+            $workflow->stage = $firstStage->stage_order;
+            $workflow->window_start = now();
+            $workflow->window_end = now();
+            $workflow->status = 'pending';
+
+            //$workflow->payload = $data;
+
+            $workflow->save();
+
+            event(new WorkflowStarted($workflow));
+
+        
+            return collect([$workflow]);
+
+        } catch (\Exception $e) {
+
+            dump("Batch validation failed for: " . $e);
+
+            \Log::warning("Batch validation failed for {$moduleName}: " . $e->getMessage());
+            return collect(); 
         }
-
-        $workflow->current_stage_order = 1; // initial stage
-        $workflow->save();
-
-        // Resolve dynamic stages (V1.2)
-        $resolver = app(config('approval-engine.stage_resolver'));
-        $stages = $resolver->resolve($workflow, $workflow->stages_array ?? []);
-
-        $workflow->stages_array = $stages;
-        $workflow->save();
-
-        // Fire event (single workflow)
-        event(new WorkflowStarted($workflow));
-
-        return $workflow;
     }
     /**
      * Resolve the module class from config and ensure it implements the interface.
@@ -109,11 +124,22 @@ class WorkflowEngine
         return app(ApproveBatchAction::class)
             ->execute($token, $userId);
     }
+
     protected function moveToNextStage($batch,$stage): EloquentCollection 
     {
 
         return app(MoveToNextStageAction::class)
             ->execute($token, $userId);
 
+    }
+
+    private function isWithinWindow($setting): bool
+    {
+        if (!$setting) return true;
+
+        $now = now();
+
+        return (!$setting->start_time || $now >= $setting->start_time)
+            && (!$setting->end_time || $now <= $setting->end_time);
     }
 }

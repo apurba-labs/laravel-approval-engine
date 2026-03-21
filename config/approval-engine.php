@@ -8,12 +8,12 @@ return [
     'modules_namespace' => 'App\\Workflow\\Modules\\',
     'stage_resolver' => ApurbaLabs\ApprovalEngine\Support\CustomStageResolver::class,
     'dynamic_stage_rules' => [
-        'RequisitionModule' => [
+        'requisition' => [
             'exception_column' => 'total_amount', 
             'trigger_threshold' => 10000,
             'role' => 'cfo',
         ],
-        'PurchaseModule' => [
+        'purchase' => [
             'exception_column' => 'days_requested',
             'trigger_threshold' => 15,
             'role' => 'hr_head',

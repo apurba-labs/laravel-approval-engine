@@ -27,26 +27,11 @@ class PurchaseModule extends BaseWorkflowModule
 
     /**
      * V1.2 FEATURE: Define the priority of owners.
-     * We want to check 'admin' first, then 'creator'.
+     * We want to check 'creator' first, then 'admin'.
      */
     public function ownerRelations(): array
     {
-        return ['user'];
-    }
-
-    /**
-     * Automatically merge priorities into eager loading.
-     */
-    public function relations(): array
-    {
-        // Start with any custom relations the developer needs
-        $customRelations = $this->customRelations();
-
-        // Merge in the owner priorities so they are always eager-loaded
-        return array_unique(array_merge(
-            $customRelations, 
-            $this->ownerRelations()
-        ));
+        return ['creator'];
     }
 
     protected function customRelations(): array

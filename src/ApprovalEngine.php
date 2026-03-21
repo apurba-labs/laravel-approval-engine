@@ -6,6 +6,7 @@ use Exception;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use ApurbaLabs\ApprovalEngine\Engine\WorkflowEngine;
+use ApurbaLabs\ApprovalEngine\Events\WorkflowStarted;
 
 class ApprovalEngine
 {

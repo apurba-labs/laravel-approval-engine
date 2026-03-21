@@ -4,7 +4,7 @@ namespace ApurbaLabs\ApprovalEngine\Tests\Feature;
 
 use ApurbaLabs\ApprovalEngine\Actions\ApproveBatchAction;
 use ApurbaLabs\ApprovalEngine\Events\BatchApproved;
-use ApurbaLabs\ApprovalEngine\Listeners\HandleBatchApproval;
+use ApurbaLabs\ApprovalEngine\Listeners\HandleBatchApproved;
 use ApurbaLabs\ApprovalEngine\Mail\BatchApprovalMail;
 use ApurbaLabs\ApprovalEngine\Models\WorkflowBatch;
 use ApurbaLabs\ApprovalEngine\Tests\TestCase;
@@ -69,7 +69,7 @@ class EventTest extends TestCase
         $event = new BatchApproved($batch);
 
         //Manually trigger the listener
-        $listener = new HandleBatchApproval();
+        $listener = new HandleBatchApproved();
         $listener->handle($event);
 
         //Verify Mail was sent

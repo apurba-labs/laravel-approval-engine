@@ -12,7 +12,7 @@ class WorkflowBatchFactory extends Factory
     public function definition()
     {
         return [
-            'module'       => 'PurchaseWorkflow',
+            'module'       => 'purchase',
             'role'         => 'HOSD',
             'token'        => 'secure-token-123',
             'window_start' => now()->subHour(),

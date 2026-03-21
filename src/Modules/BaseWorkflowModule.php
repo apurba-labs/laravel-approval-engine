@@ -70,12 +70,12 @@ abstract class BaseWorkflowModule implements WorkflowModuleInterface
 
     
     /**
-     * Default priorities: check for 'creator', then 'user'.
+     * Default priorities: check for 'user', then 'creator'.
      * Individual modules can override this.
      */
     public function ownerRelations(): array
     {
-        return ['creator', 'user'];
+        return ['user', 'creator'];
     }
 
     /**

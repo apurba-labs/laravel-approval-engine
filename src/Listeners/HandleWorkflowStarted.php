@@ -4,7 +4,7 @@ namespace ApurbaLabs\ApprovalEngine\Listeners;
 
 use ApurbaLabs\ApprovalEngine\Events\WorkflowStarted;
 use Illuminate\Support\Facades\Mail;
-use ApurbaLabs\ApprovalEngine\Mail\SingleWorkflowMail; 
+//use ApurbaLabs\ApprovalEngine\Mail\SingleWorkflowMail; 
 use ApurbaLabs\ApprovalEngine\Engine\WorkflowEngine;
 use Illuminate\Support\Facades\Log;
 

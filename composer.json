@@ -6,13 +6,14 @@
   "autoload": {
     "psr-4": {
       "ApurbaLabs\\ApprovalEngine\\": "src/",
-      "ApurbaLabs\\ApprovalEngine\\Database\\Seeders\\": "database/seeders/",
-      "ApurbaLabs\\ApprovalEngine\\Database\\Factories\\": "database/factories/"
+      "ApurbaLabs\\ApprovalEngine\\Database\\Seeders\\": "src/database/seeders/",
+      "ApurbaLabs\\ApprovalEngine\\Database\\Factories\\": "src/database/factories/"
     }
   },
   "autoload-dev": {
     "psr-4": {
-        "ApurbaLabs\\ApprovalEngine\\Tests\\": "tests/"
+        "ApurbaLabs\\ApprovalEngine\\Tests\\": "tests/",
+        "ApurbaLabs\\ApprovalEngine\\Tests\\Factories\\": "tests/Factories/"
     }
   },
   "extra": {
