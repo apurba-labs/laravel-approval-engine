@@ -43,6 +43,15 @@ class {$className} extends BaseWorkflowModule
     {
         // return \App\Models\SalesOrder::class;
     }
+    
+    /**
+     * Validate records before they enter a batch.
+     * Useful for checking data integrity or custom business rules.
+     */
+    public function validate(array $data): void
+    {
+        // Default: No validation required
+    }
 
     public function statusColumn(): string
     {
@@ -54,11 +63,22 @@ class {$className} extends BaseWorkflowModule
         return 'approved_at';
     }
 
-    public function relations(): array
+   /**
+     * Default priorities: check for 'creator', then 'user'.
+     * Individual modules can override this.
+     */
+    public function ownerRelations(): array
     {
         return [
-            // 'customer', 'items'
+            //'creator', 'user'
         ];
+    }
+
+    public function customRelations(): array
+    {
+        return [
+            //'items', 'attachments'
+        ]; // Extra stuff they need
     }
     public function selectColumns(): array
     {

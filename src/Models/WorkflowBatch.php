@@ -4,9 +4,14 @@ namespace ApurbaLabs\ApprovalEngine\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Factories\Factory; 
+use ApurbaLabs\ApprovalEngine\Database\Factories\WorkflowBatchFactory;
 
 class WorkflowBatch extends Model
 {
+    use HasFactory;
+
     protected $table = 'workflow_batches';
 
     protected $fillable = [
@@ -37,5 +42,10 @@ class WorkflowBatch extends Model
     public static function generateToken(): string
     {
         return Str::uuid()->toString();
+    }
+
+    protected static function newFactory(): Factory
+    {
+        return \ApurbaLabs\ApprovalEngine\Tests\Factories\WorkflowBatchFactory::new();
     }
 }

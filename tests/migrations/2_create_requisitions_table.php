@@ -17,6 +17,8 @@ return new class extends Migration
                 $table->id();
                 $table->unsignedBigInteger('user_id')->index();
                 $table->string('reference_id')->nullable();
+                // Standard columns for testing thresholds (v1.2)
+                $table->decimal('total_amount', 15, 2)->default(0.0);
                 $table->string('type', 10)->default('new_inject');
                 $table->mediumInteger('stage')->unsigned()->default(1);
                 $table->string('stage_status', 15)->default(WorkflowStatus::PENDING->value);

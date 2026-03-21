@@ -15,3 +15,21 @@ All notable changes to this project will be documented in this file.
 - **Testing**: 12 Feature tests with 21 assertions (MySQL & SQLite supported).
 
 ---
+
+🚀 Laravel Approval Engine v1.2
+
+✨ Features:
+- Dynamic workflow start with payload support
+- Modular architecture with WorkflowModule system
+- Configurable StageResolver for dynamic stage injection
+- Event-driven lifecycle (WorkflowStarted, Completed, etc.)
+- Support for multi-entity ownership (user/admin/customer)
+- Clean separation between manual workflows and scheduled batch processing
+
+🧠 Foundation for:
+- V1.3: Database-driven workflow_rules engine
+- V1.4: Notifications, escalation, retry system
+
+💡 Designed for scalability, SaaS readiness, and enterprise workflows.
+
+--- 
