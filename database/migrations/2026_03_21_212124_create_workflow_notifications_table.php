@@ -13,7 +13,31 @@ return new class extends Migration
     {
         Schema::create('workflow_notifications', function (Blueprint $table) {
             $table->id();
+            $table->string('module');
+            $table->string('role');
+
+            // Link to the Instance (Source of Truth)
+            $table->unsignedBigInteger('workflow_instance_id');
+
+            // Link to the Batch (Only filled when grouped for Daily/Weekly)
+            $table->unsignedBigInteger('batch_id')->nullable();
+            
+            $table->boolean('is_sent')->default(false);
+            $table->timestamp('sent_at')->nullable();
+
             $table->timestamps();
+
+            // Foreign Key Constraints for Data Integrity
+            $table->foreign('workflow_instance_id')
+                  ->references('id')->on('workflow_instances')
+                  ->onDelete('cascade');
+            
+            $table->foreign('batch_id')
+                  ->references('id')->on('workflow_batches')
+                  ->onDelete('set null');
+
+            // Index for the Cron Job to find unsent items quickly
+            $table->index(['role', 'is_sent']);
         });
     }
 
