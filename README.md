@@ -11,9 +11,9 @@ Designed for **real-world enterprise workflows** -- Supports batch approvals, em
 ---
 ## 🔥 Why This Package Exists
 In most Laravel projects:
-- • Approval workflows are rebuilt again and again
-- • Logic gets tightly coupled with business models
-- • Email spam happens (1 record = 1 email 😓)
+- Approval workflows are rebuilt again and again
+- Logic gets tightly coupled with business models
+- Email spam happens (1 record = 1 email 😓)
 
 👉 This package solves that with a clean, scalable architecture
 
@@ -21,13 +21,13 @@ In most Laravel projects:
 
 ## Key Features
 
-- ✔ **Multi-stage** approval workflows
-- ✔ **Batch processing** (20 approvals → 1 email)
-- ✔ **Email-based** approval links
-- ✔ **Modular** workflow system (plug & play)
-- ✔ **Event-driven** architecture
-- ✔ **No hard dependency** on roles system
-- ✔ **Clean architecture** (Engine + Actions + Support)
+- **Multi-stage** approval workflows
+- **Batch processing** (20 approvals → 1 email)
+- **Email-based** approval links
+- **Modular** workflow system (plug & play)
+- **Event-driven** architecture
+- **No hard dependency** on roles system
+- **Clean architecture** (Engine + Actions + Support)
 
 ---
 
@@ -41,30 +41,33 @@ In most Laravel projects:
 
 ## 🏗 How It Works
 
-Approved Records
-        ↓
-Batch Created
-        ↓
-Email Sent (1 batch)
-        ↓
-User Clicks Approval Link
-        ↓
-Next Stage Triggered
-        ↓
-Workflow Completed
+```mermaid
+graph TD
+    A[Approved Records] --> B[Batch Created]
+    B --> C[Email Sent]
+    C --> D[User Clicks Approval Link]
+    D --> E[Next Stage Triggered]
+    E --> F[Workflow Completed]
 
+    style A fill:#f9f9f9,stroke:#333
+    style F fill:#d4edda,stroke:#28a745,stroke-width:2px
+```
 ---
 ## 📊 Workflow Flow
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '12px'}, 'flowchart': {'useMaxWidth': true }}}%%
 graph TD
-    A[Batch Sent] --> B[Wait 24 Hours]
-    B --> C{Approved?}
-    C -- No --> D[Send Reminder]
-    D --> E[Wait Again]
-    E --> F{Still Pending?}
-    F -- Yes --> G[Escalate to Higher Role]
+    A[Approved Records] --> B[Batch Created]
+    B --> C[Email Sent]
+    C --> D[User Clicks Approval Link]
+    D --> E[Stage Resolver]
+    E --> F{Next Stage?}
+    F -- Yes --> G[Create Next Batch]
+    G --> H[Send Next Approval]
+    F -- No --> I[Workflow Completed]
+    
+    style F fill:#f9f,stroke:#333,stroke-width:2px
+    style I fill:#dfd,stroke:#333,stroke-width:2px
 
 ```
 
@@ -107,9 +110,9 @@ php artisan approval:demo
 
 ```pgsql
 
-- ✔ Sample data created
-- ✔ Batch generated
-- ✔ Approval link generated
+✔ Sample data created
+✔ Batch generated
+✔ Approval link generated
 
 ```
 ## 📸 Demo Screenshot
@@ -220,9 +223,9 @@ Emails contain secure token-based approval links:
 ```
 Approvers can:
 
-- • Approve All
-- • Reject
-- • View Details
+- Approve All
+- Reject
+- View Details
 
 ---
 ## 🧠 Architecture
@@ -252,28 +255,50 @@ graph TD
     style E fill:#f3e5f5
     style G fill:#e8f5e9
 ```
+This will generate a module structure ready for workflow integration.
 
 ---
-## Roadmap
+
+## Check Pending Batches
+```
+php artisan approval:status
+```
+Example Output:
+
+✔ Batch processing <br />
+✔ Email notifications <br />
+✔ Modular workflows
+
+---
+## 🚀 Roadmap
 
 ### v1.0
 
-- ✔ Batch processing
-- ✔ Email notifications
-- ✔ Modular workflows
+✔ Batch processing \
+✔ Email approvals \
+✔ Modular workflows
 
 ### v2.0
 
-- 🔜 Reminder engine
-- 🔜 Slack / Teams integration
-- 🔜 Escalation rules
+🔜 Reminder engine \
+🔜 Slack / Teams integration \
+🔜 Escalation rules
 
 ### v3.0
 
-- 🔜 Workflow UI builder
-- 🔜 API support
-- 🔜 Multi-tenant SaaS
+🔜 Workflow UI builder <br />
+🔜 API support <br />
+🔜 Multi-tenant SaaS
 
+This project demonstrates:
+* **Requisition Approval Workflow**: A real-world implementation of the engine.
+* **Batch Processing**: See how 10+ records are grouped into a single approval task.
+* **Approval Links**: Test the token-based GET requests in a live Laravel 12 environment.
+
+To run the demo:
+1. Navigate to `example/laravel-demo`
+2. Run `composer install`
+3. Run `php artisan approval:demo` to generate test data and an approval link.
 ---
 ## 🤝 Contributing
 
