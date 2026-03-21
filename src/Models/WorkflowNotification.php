@@ -4,6 +4,7 @@ namespace ApurbaLabs\ApprovalEngine\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class WorkflowNotification extends Model
 {
@@ -33,5 +34,10 @@ class WorkflowNotification extends Model
     public function batch(): BelongsTo
     {
         return $this->belongsTo(WorkflowBatch::class, 'batch_id');
+    }
+
+    public function recipient(): MorphTo
+    {
+        return $this->morphTo();
     }
 }

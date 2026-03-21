@@ -16,12 +16,15 @@ return new class extends Migration
             $table->string('module');
             $table->string('role');
 
+            // This creates recipient_id and recipient_type
+            $table->nullableMorphs('recipient'); 
+
             // Link to the Instance (Source of Truth)
             $table->unsignedBigInteger('workflow_instance_id');
 
             // Link to the Batch (Only filled when grouped for Daily/Weekly)
             $table->unsignedBigInteger('batch_id')->nullable();
-            
+
             $table->boolean('is_sent')->default(false);
             $table->timestamp('sent_at')->nullable();
 
@@ -37,7 +40,7 @@ return new class extends Migration
                   ->onDelete('set null');
 
             // Index for the Cron Job to find unsent items quickly
-            $table->index(['role', 'is_sent']);
+            $table->index(['module', 'role', 'is_sent']);
         });
     }
 
