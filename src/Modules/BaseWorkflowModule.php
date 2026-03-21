@@ -19,6 +19,31 @@ abstract class BaseWorkflowModule implements WorkflowModuleInterface
     }
 
     /**
+     * Retrieve the workflow settings for this specific module.
+     * If a stage is provided, it returns settings for that stage.
+     */
+    public function getSettings($role = null)
+    {
+        $query = \ApurbaLabs\ApprovalEngine\Models\WorkflowSetting::where('module', $this->name())
+            ->where('is_active', true);
+
+        if ($role) {
+            return $query->where('role', $role)->first();
+        }
+
+        return $query->get();
+    }
+    
+    /**
+     * Validate records before they enter a batch.
+     * Useful for checking data integrity or custom business rules.
+     */
+    public function validate(array $data): void
+    {
+        // Default: No validation required
+    }
+
+    /**
      * Default status column name. 
      * Override this in the child class if it differs.
      */
