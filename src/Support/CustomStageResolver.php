@@ -18,6 +18,8 @@ class CustomStageResolver extends StageResolver
     {
         $moduleName = is_string($module) ? $module : get_class($module);
 
+        dump("Module Name: " . $moduleName);
+        
         $rules = config('approval-engine.dynamic_stage_rules', []);
 
         if (isset($rules[$moduleName])) {

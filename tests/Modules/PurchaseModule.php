@@ -3,15 +3,18 @@
 namespace ApurbaLabs\ApprovalEngine\Tests\Modules;
 
 use ApurbaLabs\ApprovalEngine\Modules\BaseWorkflowModule;
-use ApurbaLabs\ApprovalEngine\Tests\Models\Requisition;
+use ApurbaLabs\ApprovalEngine\Tests\Models\Purchase;
 
-class RequisitionModule extends BaseWorkflowModule
+class PurchaseModule extends BaseWorkflowModule
 {
+    /**
+     * The Eloquent model this module manages.
+     */
     public function model(): string
     {
-        return Requisition::class;
+        return Purchase::class;
     }
-
+    
     public function approvedColumn(): string
     {
         return 'approved_at';
@@ -53,22 +56,12 @@ class RequisitionModule extends BaseWorkflowModule
 
     public function selectColumns(): array
     {
-         return [
-            'id',
-            'user_id',
-            'reference_id',
-            'stage',
-            'stage_status',
-            'status',
-            'approved_at',
-        ];
+         return [];
     }
 
     public function displayColumns(): array
     {
-        return [
-            'reference_id' => 'Reference',
-            'user.name' => 'Requested By',
-        ];
+        return [];
     }
+
 }

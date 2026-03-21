@@ -21,6 +21,11 @@ interface WorkflowModuleInterface
     public function model(): string;
 
     /**
+     * Define the priority list of relationship names that represent the owner.
+     */
+    public function ownerRelations(): array;
+
+    /**
      * The column name that tracks the approval state (e.g., 'is_approved').
      */
     public function approvedColumn(): string;

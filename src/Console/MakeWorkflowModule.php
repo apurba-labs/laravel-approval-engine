@@ -54,11 +54,22 @@ class {$className} extends BaseWorkflowModule
         return 'approved_at';
     }
 
-    public function relations(): array
+   /**
+     * Default priorities: check for 'creator', then 'user'.
+     * Individual modules can override this.
+     */
+    public function ownerRelations(): array
     {
         return [
-            // 'customer', 'items'
+            //'creator', 'user'
         ];
+    }
+
+    protected function customRelations(): array
+    {
+        return [
+            //'items', 'attachments'
+        ]; // Extra stuff they need
     }
     public function selectColumns(): array
     {

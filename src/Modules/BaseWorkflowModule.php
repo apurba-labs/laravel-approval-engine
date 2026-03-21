@@ -17,6 +17,7 @@ abstract class BaseWorkflowModule implements WorkflowModuleInterface
             str_replace('Module','',class_basename($this))
         );
     }
+
     /**
      * Default status column name. 
      * Override this in the child class if it differs.
@@ -42,7 +43,35 @@ abstract class BaseWorkflowModule implements WorkflowModuleInterface
         return ['*'];
     }
 
+    
+    /**
+     * Default priorities: check for 'creator', then 'user'.
+     * Individual modules can override this.
+     */
+    public function ownerRelations(): array
+    {
+        return ['creator', 'user'];
+    }
+
+    /**
+     * Automatically merge priorities into eager loading.
+     */
     public function relations(): array
+    {
+        // Start with any custom relations the developer needs
+        $customRelations = $this->customRelations();
+
+        // Merge in the owner priorities so they are always eager-loaded
+        return array_unique(array_merge(
+            $customRelations, 
+            $this->ownerRelations()
+        ));
+    }
+
+    /**
+     * Allow developers to add extra relations (like 'items' or 'department').
+     */
+    protected function customRelations(): array
     {
         return [];
     }

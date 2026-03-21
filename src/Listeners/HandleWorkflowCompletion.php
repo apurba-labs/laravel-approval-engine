@@ -15,36 +15,34 @@ class HandleWorkflowCompletion
         $engine = app(\ApurbaLabs\ApprovalEngine\Engine\WorkflowEngine::class);
         $module = $engine->getModule($batch->module);
 
-        // 1. Get the actual Eloquent records
         $records = $engine->getApprovedRecords(
             $module->name(), 
             $batch->window_start, 
             $batch->window_end
         );
 
-        // 2. Get the owner column dynamically from the module
-        $ownerColumn = method_exists($module, 'getOwnerColumn') 
-            ? $module->getOwnerColumn() 
-            : 'user_id'; // Fallback default
+        $notificationQueue = [];
 
-        // 3. Group records by the owner found in that specific column
         $groupedByOwner = $records->groupBy($ownerColumn);
 
-        foreach ($groupedByOwner as $ownerId => $userRecords) {
-            // Find the user model dynamically
-            $user = User::find($ownerId);
-            
-            if (!$user) continue;
+        foreach ($records as $record) {
+            $owner = $module->resolveOwner($record);
 
-            // 4. Send the personalized email for THEIR records only
-            Mail::to($user->email)->send(new WorkflowFinalizedMail(
-                $batch, 
-                $module, 
-                $userRecords // These are only the records belonging to this user
-            ));
+            if ($owner && !empty($owner->email)) {
+                $notificationQueue[$owner->email]['owner'] = $owner;
+                $notificationQueue[$owner->email]['records'][] = $record;
+            }
         }
 
-        // 5. Finalize the source table status
-        $engine->finalizeSourceRecords($module->name(), $records->pluck('id'));
+        // foreach ($notificationQueue as $email => $data) {
+        //     Mail::to($email)->send(new WorkflowFinalizedMail(
+        //         $batch, 
+        //         $module, 
+        //         collect($data['records']), 
+        //         $data['owner']
+        //     ));
+        // }
+
+        Log::info("Workflow COMPLETELY Finished: Batch #{$batch->id} for {$module->name()}");
     }
 }
