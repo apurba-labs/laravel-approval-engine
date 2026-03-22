@@ -28,7 +28,6 @@ return new class extends Migration
 
             // Index for faster dashboard and analytics queries
             $table->index(['module', 'status']);
-            $table->timestamps();
         });
     }
 
