@@ -22,9 +22,9 @@ class WorkflowEngine
 {
     public function start($module, array $data): Collection
     {
-        $stageNavigator = app(StageNavigator::class);
-        // Resolve module instance
-        $moduleInstance = is_string($module) ? $this->getModule($module) : $module;
+        $moduleInstance = is_string($module)
+            ? $this->getModule($module)
+            : $module;
 
         $moduleName = $moduleInstance->name();
         //dump("Batch validation failed for: " . $moduleName);
@@ -34,21 +34,26 @@ class WorkflowEngine
             $stageNavigator = app(StageNavigator::class);
             $firstStage = $stageNavigator->getFirstStage($moduleName);
 
-            $workflow = new WorkflowBatch();
-            $workflow->module = $moduleName;
-            $workflow->role = $firstStage->role?? 'Admin';
-            $workflow->token = WorkflowBatch::generateToken();
-            $workflow->stage = $firstStage->stage_order;
-            $workflow->window_start = now();
-            $workflow->window_end = now();
-            $workflow->status = 'pending';
+            // create instance
+            $workflow = WorkflowInstance::create([
+                'module' => $moduleName,
+                'current_stage_order' => $firstStage->stage_order,
+                'status' => 'pending',
+                'payload' => $data,
+                'started_at' => now(),
+            ]);
 
-            //$workflow->payload = $data;
+            // create log (metrics)
+            WorkflowLog::create([
+                'workflow_instance_id' => $workflow->id,
+                'module' => $moduleName,
+                'role' => $firstStage->role,
+                'stage_order' => $firstStage->stage_order,
+                'entered_at' => now(),
+            ]);
 
-            $workflow->save();
-
-            event(new WorkflowStarted($workflow));
-
+            // event
+            event(new WorkflowStarted(collect([$workflow])));
         
             return collect([$workflow]);
 

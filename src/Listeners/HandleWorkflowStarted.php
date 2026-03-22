@@ -20,13 +20,10 @@ class HandleWorkflowStarted
      */
     public function handle(WorkflowStarted $event)
     {
-        if ($event->isBatch()) {
-            return;
-        }
 
         $stageNavigator = app(StageNavigator::class);
 
-        foreach ($event->getWorkflows() as $workflow) {
+        foreach ($event->workflows() as $workflow) {
 
             $stage = $stageNavigator->getCurrentStage(
                 $workflow->module,
