@@ -29,6 +29,7 @@
   },
   "require-dev": {
      "orchestra/testbench": "*",
-     "phpunit/phpunit": "^10.0"
+     "phpunit/phpunit": "^10.0",
+    "doctrine/dbal": "^4.4"
   }
 }
