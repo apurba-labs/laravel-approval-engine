@@ -7,7 +7,7 @@ use Carbon\Carbon;
 
 use ApurbaLabs\ApprovalEngine\Engine\WorkflowEngine;
 
-use ApurbaLabs\ApprovalEngine\Support\StageResolver;
+use ApurbaLabs\ApprovalEngine\Support\StageNavigator;
 use ApurbaLabs\ApprovalEngine\Support\BatchProcessor;
 use ApurbaLabs\ApprovalEngine\Support\BatchWindowResolver;
 
@@ -23,7 +23,7 @@ class SendWorkflowBatchCommand extends Command
     {
         $engine = app(WorkflowEngine::class);
         $processor = app(BatchProcessor::class);
-        $stageResolver = app(StageResolver::class);
+        $stageNavigator = app(StageNavigator::class);
         $windowResolver = app(BatchWindowResolver::class);
 
         $modules = $engine->discoverModules();
@@ -65,13 +65,13 @@ class SendWorkflowBatchCommand extends Command
                     continue;
                 }
 
-                $stage = $stageResolver->getStage($moduleName, $settings->role);
+                $stageByRole = $stageNavigator->getStageByRole($moduleName, $settings->role);
 
                 try {
                     $batch = $processor->createBatch(
                         $moduleName,
                         $settings->role,
-                        $stage,
+                        $stageByRole->stage,
                         $start,
                         $end
                     );

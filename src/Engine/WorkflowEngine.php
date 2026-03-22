@@ -11,7 +11,7 @@ use ApurbaLabs\ApprovalEngine\Events\WorkflowStarted;
 
 use ApurbaLabs\ApprovalEngine\Models\WorkflowBatch;
 
-use ApurbaLabs\ApprovalEngine\Support\StageResolver;
+use ApurbaLabs\ApprovalEngine\Support\StageNavigator;
 
 use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
@@ -22,7 +22,7 @@ class WorkflowEngine
 {
     public function start($module, array $data): Collection
     {
-        $stageResolver = app(StageResolver::class);
+        $stageNavigator = app(StageNavigator::class);
         // Resolve module instance
         $moduleInstance = is_string($module) ? $this->getModule($module) : $module;
 
@@ -31,8 +31,8 @@ class WorkflowEngine
         try {
             $moduleInstance->validate($data);
 
-            $stageResolver = app(StageResolver::class);
-            $firstStage = $stageResolver->getFirstStage($moduleName);
+            $stageNavigator = app(StageNavigator::class);
+            $firstStage = $stageNavigator->getFirstStage($moduleName);
 
             $workflow = new WorkflowBatch();
             $workflow->module = $moduleName;

@@ -4,7 +4,7 @@ namespace ApurbaLabs\ApprovalEngine\Actions;
 
 use ApurbaLabs\ApprovalEngine\Models\WorkflowSetting;
 use ApurbaLabs\ApprovalEngine\Models\WorkflowBatch;
-use ApurbaLabs\ApprovalEngine\Support\StageResolver;
+use ApurbaLabs\ApprovalEngine\Support\StageNavigator;
 use ApurbaLabs\ApprovalEngine\Support\BatchWindowResolver;
 use Illuminate\Support\Str;
 
@@ -13,9 +13,9 @@ class MoveToNextStageAction
     public function execute($batch, int $stage)
     {
         $windowResolver = app(BatchWindowResolver::class);
-        $stageResolver = app(StageResolver::class);
+        $stageNavigator = app(StageNavigator::class);
 
-        $nextStage = $stageResolver->getNextStage(
+        $nextStage = $stageNavigator->getNextStage(
             $batch->module,
             $batch->stage
         );

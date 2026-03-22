@@ -6,7 +6,7 @@ use ApurbaLabs\ApprovalEngine\Events\BatchApproved;
 use ApurbaLabs\ApprovalEngine\Actions\MoveToNextStageAction;
 use ApurbaLabs\ApprovalEngine\Models\WorkflowBatch;
 use ApurbaLabs\ApprovalEngine\Models\WorkflowApproval;
-use ApurbaLabs\ApprovalEngine\Support\StageResolver;
+use ApurbaLabs\ApprovalEngine\Support\StageNavigator;
 
 class ApproveBatchAction
 {
@@ -24,7 +24,7 @@ class ApproveBatchAction
 
         event(new BatchApproved($batch));
 
-        $resolver = new StageResolver();
+        $resolver = new StageNavigator();
 
         $nextStage = $resolver->getNextStage(
             $batch->module,
