@@ -3,6 +3,8 @@ namespace ApurbaLabs\ApprovalEngine\Services;
 
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
+use ApurbaLabs\ApprovalEngine\Notifications\WorkflowSingleNotification;
+use ApurbaLabs\ApprovalEngine\Notifications\WorkflowBatchNotification;
 
 class NotificationService
 {
@@ -43,7 +45,7 @@ class NotificationService
     {
         try {
             Mail::to($this->resolveRecipients($notification))
-                ->send(new \App\Mail\WorkflowNotificationMail($notification));
+                ->send(new \App\Mail\WorkflowSingleNotification($notification));
         } catch (\Exception $e) {
             Log::error("Mail failed: " . $e->getMessage());
         }
@@ -53,7 +55,7 @@ class NotificationService
     {
         try {
             Mail::to($this->resolveBatchRecipients($role))
-                ->send(new \App\Mail\WorkflowBatchMail($items, $batch));
+                ->send(new \App\Mail\WorkflowBatchNotification($items, $batch));
         } catch (\Exception $e) {
             Log::error("Batch mail failed: " . $e->getMessage());
         }
