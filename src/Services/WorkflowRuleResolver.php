@@ -1,27 +1,27 @@
 <?php
-namespace ApurbaLabs\ApprovalEngine\Services;
-
+use Illuminate\Support\Facades\Cache;
 use App\Models\WorkflowRule;
 use ApurbaLabs\ApprovalEngine\Support\StageNavigator;
 
+/**
+ * Services + Cached + Safe
+ */
 class WorkflowRuleResolver
 {
-    protected StageNavigator $stageNavigator;
-
-    public function __construct(StageNavigator $stageNavigator)
-    {
-        $this->stageNavigator = $stageNavigator;
-    }
+    public function __construct(protected StageNavigator $stageNavigator) {}
 
     public function resolveNextStage($workflow)
     {
         $module = $workflow->module;
         $payload = $workflow->payload ?? [];
 
-        $rules = WorkflowRule::where('module', $module)
-            ->where('is_active', true)
-            ->orderBy('priority')
-            ->get();
+        $rules = Cache::rememberForever(
+            "workflow_rules:{$module}",
+            fn() => WorkflowRule::where('module', $module)
+                ->where('is_active', true)
+                ->orderBy('priority')
+                ->get()
+        );
 
         foreach ($rules as $rule) {
 
@@ -36,21 +36,27 @@ class WorkflowRuleResolver
             }
         }
 
-        // fallback
         return $this->stageNavigator->getNextStage(
             $module,
             $workflow->current_stage_order
         );
     }
 
-    private function evaluate($left, $operator, $right): bool
+    private function evaluate($left, $op, $right): bool
     {
-        return match ($operator) {
+        // Cast to numeric if both sides look like numbers to prevent string comparison bugs
+        if (is_numeric($left) && is_numeric($right)) {
+            $left = (float) $left;
+            $right = (float) $right;
+        }
+
+        return match ($op) {
             '>'  => $left > $right,
             '<'  => $left < $right,
             '='  => $left == $right,
             '>=' => $left >= $right,
             '<=' => $left <= $right,
+            '!=' => $left != $right,
             default => false,
         };
     }
