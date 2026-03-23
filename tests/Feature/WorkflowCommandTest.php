@@ -3,8 +3,7 @@
 namespace ApurbaLabs\ApprovalEngine\Tests\Feature;
 
 use ApurbaLabs\ApprovalEngine\Tests\TestCase; 
-//use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\DatabaseTransactions; 
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 use ApurbaLabs\ApprovalEngine\Database\Seeders\WorkflowSeeder;
 use ApurbaLabs\ApprovalEngine\Engine\WorkflowEngine;
@@ -27,7 +26,7 @@ use Illuminate\Support\Facades\DB;
 
 class WorkflowCommandTest extends TestCase
 {
-    use DatabaseTransactions;
+    use RefreshDatabase;
 
     protected function setUp(): void
     {
@@ -129,7 +128,7 @@ class WorkflowCommandTest extends TestCase
 
         $user = User::create([
                 'name' => 'Apurba',
-                'email' => 'apurba@example.com',
+                'email' => 'apurba2@example.com',
                 'password' => bcrypt('password'),
             ]);
 

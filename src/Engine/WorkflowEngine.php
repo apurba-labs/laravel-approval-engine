@@ -10,6 +10,8 @@ use ApurbaLabs\ApprovalEngine\Actions\MoveToNextStageAction;
 use ApurbaLabs\ApprovalEngine\Events\WorkflowStarted;
 
 use ApurbaLabs\ApprovalEngine\Models\WorkflowBatch;
+use ApurbaLabs\ApprovalEngine\Models\WorkflowInstance;
+use ApurbaLabs\ApprovalEngine\Models\WorkflowLog;
 
 use ApurbaLabs\ApprovalEngine\Support\StageNavigator;
 

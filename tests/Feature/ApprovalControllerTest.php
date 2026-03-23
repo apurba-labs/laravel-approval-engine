@@ -5,14 +5,14 @@ namespace ApurbaLabs\ApprovalEngine\Tests\Feature;
 use ApurbaLabs\ApprovalEngine\Tests\TestCase;
 use ApurbaLabs\ApprovalEngine\Models\WorkflowBatch;
 use ApurbaLabs\ApprovalEngine\Engine\WorkflowEngine;
-//use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\DatabaseTransactions; 
+use Illuminate\Foundation\Testing\RefreshDatabase;
+//use Illuminate\Foundation\Testing\DatabaseTransactions; 
 use ApurbaLabs\ApprovalEngine\Tests\Models\User;
 use Mockery\MockInterface;
 
 class ApprovalControllerTest extends TestCase
 {
-    use DatabaseTransactions;
+    use RefreshDatabase;
 
     /** @test */
     public function it_can_approve_a_batch_via_token()
@@ -34,7 +34,7 @@ class ApprovalControllerTest extends TestCase
         });
         $user = User::create([
                 'name' => 'Apurba',
-                'email' => 'apurba@example.com',
+                'email' => 'apurba3@example.com',
                 'password' => bcrypt('password'),
             ]);
         

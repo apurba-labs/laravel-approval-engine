@@ -7,8 +7,10 @@ use ApurbaLabs\ApprovalEngine\Events\BatchApproved;
 
 class BatchProcessor
 {
-    public function createBatch(string $module, string $role, int $stage, $start, $end)
+    public function createBatch(string $module, string $role, ?int $stage, $start, $end)
     {
+        $stage = $stage ?? 1;
+
         $moduleName = is_string($module) ? $module : $module->name();
 
         return WorkflowBatch::create([

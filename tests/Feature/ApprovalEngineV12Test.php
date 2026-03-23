@@ -33,9 +33,6 @@ class ApprovalEngineV12Test extends TestCase
         $engine = app(\ApurbaLabs\ApprovalEngine\Engine\WorkflowEngine::class);
         $module = $engine->getModule($batch->module);
         
-        dump("Module Relations:", $module->relations()); 
-        dump("Owner Priority List:", $module->ownerRelations());
-
         $this->assertEquals('creator', $module->relations()[0]);
     }
 

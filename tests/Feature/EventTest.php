@@ -8,13 +8,14 @@ use ApurbaLabs\ApprovalEngine\Listeners\HandleBatchApproved;
 use ApurbaLabs\ApprovalEngine\Mail\BatchApprovalMail;
 use ApurbaLabs\ApprovalEngine\Models\WorkflowBatch;
 use ApurbaLabs\ApprovalEngine\Tests\TestCase;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
+//use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Mail;
 
 class EventTest extends TestCase
 {
-    use DatabaseTransactions;
+    use RefreshDatabase;
 
     /** @test */
     public function it_dispatches_batch_approved_event_when_action_is_executed()
