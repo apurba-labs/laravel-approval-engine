@@ -1,9 +1,9 @@
 <?php
 
-namespace ApurbaLabs\ApprovalEngine\Tests\Modules;
+namespace ApurbaLabs\ApprovalEngine\Tests\Support\Modules;
 
 use ApurbaLabs\ApprovalEngine\Modules\BaseWorkflowModule;
-use ApurbaLabs\ApprovalEngine\Tests\Models\Purchase;
+use ApurbaLabs\ApprovalEngine\Tests\Support\Models\Purchase;
 
 class PurchaseModule extends BaseWorkflowModule
 {

@@ -1,6 +1,6 @@
 <?php
 
-namespace ApurbaLabs\ApprovalEngine\Tests\Models;
+namespace ApurbaLabs\ApprovalEngine\Tests\Support\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

@@ -21,6 +21,13 @@ abstract class TestCase extends BaseTestCase
         // This looks into the vendor folder of the testbench app
         $this->loadLaravelMigrations(); 
 
+        // Dynamic check: Add role_id if it doesn't exist
+        if (!Schema::hasColumn('users', 'role_id')) {
+            Schema::table('users', function (Blueprint $table) {
+                $table->unsignedBigInteger('role_id')->nullable()->after('id');
+            });
+        }
+
         // load your package migrations
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
 

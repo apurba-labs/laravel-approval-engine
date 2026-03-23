@@ -3,11 +3,14 @@
 namespace ApurbaLabs\ApprovalEngine\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 use ApurbaLabs\ApprovalEngine\Database\Factories\WorkflowRuleFactory;
 
 class WorkflowRule extends Model
 {
+    use HasFactory;
+    
     protected $fillable = ['module', 'field', 'operator', 'value', 'role', 'priority'];
 
     /**

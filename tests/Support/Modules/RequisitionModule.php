@@ -1,9 +1,9 @@
 <?php
 
-namespace ApurbaLabs\ApprovalEngine\Tests\Modules;
+namespace ApurbaLabs\ApprovalEngine\Tests\Support\Modules;
 
 use ApurbaLabs\ApprovalEngine\Modules\BaseWorkflowModule;
-use ApurbaLabs\ApprovalEngine\Tests\Models\Requisition;
+use ApurbaLabs\ApprovalEngine\Tests\Support\Models\Requisition;
 
 class RequisitionModule extends BaseWorkflowModule
 {
