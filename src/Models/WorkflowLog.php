@@ -2,9 +2,15 @@
 namespace ApurbaLabs\ApprovalEngine\Models;
 
 use Illuminate\Database\Eloquent\Model;
+//use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+use ApurbaLabs\ApprovalEngine\Database\Factories\WorkflowLogFactory;
 
 class WorkflowLog extends Model
 {
+    //use HasFactory;
+
     protected $table = 'workflow_logs';
 
     protected $guarded = [];
@@ -14,13 +20,18 @@ class WorkflowLog extends Model
         'exited_at' => 'datetime',
     ];
 
-    public function instance()
+    public function instance(): BelongsTo
     {
         return $this->belongsTo(WorkflowInstance::class, 'workflow_instance_id');
     }
 
-    public function user()
+    // Relationship removed to support dynamic Module Owners (creator/admin/user)
+
+    /**
+     * Create a new factory instance for the model.
+     */
+    protected static function newFactory(): Factory
     {
-        return $this->belongsTo(\App\Models\User::class, 'user_id');
+        return WorkflowLogFactory::new();
     }
 }

@@ -5,6 +5,8 @@ namespace ApurbaLabs\ApprovalEngine\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
+use ApurbaLabs\ApprovalEngine\Database\Factories\WorkflowSettingFactory;
+
 class WorkflowSetting extends Model
 {
     use HasFactory;
@@ -47,5 +49,13 @@ class WorkflowSetting extends Model
             5 => 'Friday',
             6 => 'Saturday',
         ];
+    }
+
+    /**
+     * Create a new factory instance for the model.
+     */
+    protected static function newFactory(): Factory
+    {
+        return WorkflowSettingFactory::new();
     }
 }

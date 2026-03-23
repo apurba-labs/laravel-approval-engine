@@ -44,8 +44,11 @@ class WorkflowBatch extends Model
         return Str::uuid()->toString();
     }
 
+    /**
+     * Create a new factory instance for the model.
+     */
     protected static function newFactory(): Factory
     {
-        return \ApurbaLabs\ApprovalEngine\Tests\Factories\WorkflowBatchFactory::new();
+        return WorkflowBatchFactory::new();
     }
 }

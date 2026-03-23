@@ -5,10 +5,12 @@ namespace ApurbaLabs\ApprovalEngine\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+use ApurbaLabs\ApprovalEngine\Models\WorkflowNotification;
+use ApurbaLabs\ApprovalEngine\Database\Factories\WorkflowInstanceFactory;
 class WorkflowInstance extends Model
 {
     protected $guarded = [];
-
+    
     /**
      * The attributes that should be cast.
      */
@@ -25,5 +27,13 @@ class WorkflowInstance extends Model
     public function notifications(): HasMany
     {
         return $this->hasMany(WorkflowNotification::class, 'workflow_instance_id');
+    }
+
+    /**
+     * Create a new factory instance for the model.
+     */
+    protected static function newFactory(): Factory
+    {
+        return WorkflowInstanceFactory::new();
     }
 }

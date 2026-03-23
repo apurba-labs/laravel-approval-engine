@@ -5,20 +5,38 @@ namespace ApurbaLabs\ApprovalEngine\Database\Factories;
 use ApurbaLabs\ApprovalEngine\Models\WorkflowBatch;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
+/**
+ * @extends Factory<Model>
+ */
 class WorkflowBatchFactory extends Factory
 {
+    /**
+     * The name of the factory's corresponding model.
+     *
+     * @var class-string<\Illuminate\Database\Eloquent\Model>
+     */
     protected $model = WorkflowBatch::class;
 
-    public function definition()
+    /**
+     * Define the model's default state.
+     *
+     * @return array<string, mixed>
+     */
+    public function definition(): array
     {
         return [
-            'module'       => 'purchase',
-            'role'         => 'HOSD',
-            'token'        => 'secure-token-123',
-            'window_start' => now()->subHour(),
-            'window_end'   => now(),
-            'status'       => 'pending',
-            'stage'        => 1,
+            'module' => 'requisition',
+            'role' => 'HOSD',
+            'token' => Str::random(32),
+            'stage' => 1,
+            'window_start' => now()->subDay(),
+            'window_end' => now(),
+            'status' => 'pending',
         ];
     }
+
+    public function forModule(string $name){ return $this->state(fn () => ['module' => $name]); }
+    public function forRole(string $role) { return $this->state(fn() => ['role' => $role]); }
+    public function atStage(int $order){ return $this->state(fn () => ['stage' => $order]); }
+    public function completed() { return $this->state(fn() => ['status' => 'completed', 'completed_at' => now()]); }
 }

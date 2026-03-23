@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
+use ApurbaLabs\ApprovalEngine\Database\Factories\WorkflowNotificationFactory;
+
 class WorkflowNotification extends Model
 {
     protected $guarded = [];
@@ -39,5 +41,13 @@ class WorkflowNotification extends Model
     public function recipient(): MorphTo
     {
         return $this->morphTo();
+    }
+
+    /**
+     * Create a new factory instance for the model.
+     */
+    protected static function newFactory(): Factory
+    {
+        return WorkflowNotificationFactory::new();
     }
 }

@@ -5,6 +5,8 @@ namespace ApurbaLabs\ApprovalEngine\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
+use ApurbaLabs\ApprovalEngine\Database\Factories\WorkflowStageFactory;
+
 class WorkflowStage extends Model
 {
     use HasFactory;
@@ -28,4 +30,12 @@ class WorkflowStage extends Model
     protected $casts = [
         'stage_order' => 'integer',
     ];
+
+    /**
+     * Create a new factory instance for the model.
+     */
+    protected static function newFactory(): Factory
+    {
+        return WorkflowStageFactory::new();
+    }
 }
