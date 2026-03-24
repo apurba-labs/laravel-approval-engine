@@ -5,8 +5,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 
 use ApurbaLabs\ApprovalEngine\Models\WorkflowSetting;
-use ApurbaLabs\ApprovalEngine\Notifications\WorkflowSingleNotification;
-use ApurbaLabs\ApprovalEngine\Notifications\WorkflowBatchNotification;
+use ApurbaLabs\ApprovalEngine\Mail\BatchApprovalMail;
 
 class NotificationService
 {
@@ -45,22 +44,29 @@ class NotificationService
 
     protected function sendMail($notification)
     {
-        try {
-            Mail::to($this->resolveRecipients($notification))
-                ->send(new WorkflowSingleNotification($notification));
-        } catch (\Exception $e) {
-            Log::error("Mail failed: " . $e->getMessage());
-        }
+        // V1.3 Placeholder: Log the intent instead of sending a real email
+        // This allows you to test the BatchProcessor logic without a Mail Server
+        \Log::info("Workflow Batch Notification Ready", [
+            'notice'   => 'Real Mail/Notification delivery will be implemented in V1.4'
+        ]);
+
     }
 
     protected function sendBatchMail($role, $items, $batch)
     {
-        try {
-            Mail::to($this->resolveBatchRecipients($role))
-                ->send(new WorkflowBatchNotification($items, $batch));
-        } catch (\Exception $e) {
-            Log::error("Batch mail failed: " . $e->getMessage());
-        }
+
+        // V1.3 Placeholder: Log the intent instead of sending a real email
+        // This allows you to test the BatchProcessor logic without a Mail Server
+        \Log::info("Workflow Batch Notification Ready", [
+            'module'   => $batch->module,
+            'role'     => $role,
+            'items'    => count($items),
+            'batch_id' => $batch->id,
+            'notice'   => 'Real Mail/Notification delivery will be implemented in V1.4'
+        ]);
+
+        //Return true so the BatchProcessor marks these as 'sent' for now
+        return true; 
     }
 
     protected function sendSlack($notification)
