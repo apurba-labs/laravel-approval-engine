@@ -28,82 +28,103 @@ class SendWorkflowBatchCommand extends Command
         $windowResolver = app(BatchWindowResolver::class);
         $notificationService = app(NotificationService::class);
 
-        $modules = $engine->discoverModules();
+        // START FROM SETTINGS
+        $settingsList = WorkflowSetting::where('is_active', 1)->get();
 
-        if (empty($modules)) {
-            $this->warn('No workflow modules discovered.');
+        if ($settingsList->isEmpty()) {
+            $this->warn('No active workflow settings found.');
             return Command::SUCCESS;
         }
 
-        foreach ($modules as $module) {
+        foreach ($settingsList as $settings) {
 
-            $moduleName = $module->name();
-            $this->info("Processing module: {$moduleName}");
+            $moduleName = $settings->module;
 
-            $settingsList = WorkflowSetting::where('module', $moduleName)
-                ->where('is_active', true)
+            $this->info("Processing module: {$moduleName} | role: {$settings->role}");
+
+            // validate module exists
+            try {
+                $module = $engine->getModule($moduleName);
+            } catch (\Exception $e) {
+                dump("No active settings found in DB during command run! Module: {$e}");
+                $this->error("Module not found: {$moduleName}");
+                continue;
+            }
+
+            // schedule check
+            if (!$this->shouldSendToday($settings)) {
+                $this->line("Skipping (schedule not matched)");
+                continue;
+            }
+
+            $window = $windowResolver->resolve($settings);
+            $start = $window['start'] ?? now()->subDay();
+            $end = $window['end'] ?? now();
+
+            // prevent duplicate batch
+            $existing = $processor->findExistingBatch(
+                $moduleName,
+                $settings->role,
+                $start,
+                $end
+            );
+
+            if ($existing) {
+                $this->line("Batch already exists, skipping...");
+                continue;
+            }
+
+            // 9fetch notifications
+            $notifications = WorkflowNotification::where('module', $moduleName)
+                ->where('role', $settings->role)
+                ->where('status', 'pending')
+                ->whereBetween('created_at', [$start, $end])
                 ->get();
 
-            foreach ($settingsList as $settings) {
+            $this->line("Pending notifications: {$notifications->count()}");
 
-                if (!$this->shouldSendToday($settings)) {
-                    continue;
-                }
+            if ($notifications->isEmpty()) {
+                continue;
+            }
 
+            try {
+                // create batch
+                $batch = $processor->createBatch(
+                    $moduleName,
+                    $settings->role,
+                    $start,
+                    $end
+                );
+
+                // send
+                $notificationService->sendBatch($batch, $notifications);
+
+                // mark notifications
+                WorkflowNotification::whereIn('id', $notifications->pluck('id'))
+                    ->update([
+                        'status' => 'sent',
+                        'sent_at' => now(),
+                    ]);
+
+                // update batch
+                $processor->markSent($batch, $notifications->count());
+
+                // update setting AFTER success
                 $settings->update(['last_run_at' => now()]);
 
-                $this->info("Processing role: {$settings->role}");
+                $this->info("Batch sent ({$notifications->count()})");
 
-                $window = $windowResolver->resolve($settings);
-                $start = $window['start'] ?? now()->subDay();
-                $end = $window['end'] ?? now();
+            } catch (\Exception $e) {
+                dump("No active settings found in DB during command run! Module: {$e}");
+                $this->error("Batch failed: " . $e->getMessage());
 
-                $existing = $processor->findExistingBatch($moduleName, $settings->role, $start, $end);
-                if ($existing) {
-                    $this->line("Batch already exists, skipping...");
-                    continue;
-                }
-                // Notifications
-                $notifications = WorkflowNotification::where('module', $moduleName)
-                    ->where('role', $settings->role)
-                    ->where('status', 'pending')
-                    ->whereBetween('created_at', [$start, $end])
-                    ->get();
-
-                if ($notifications->isEmpty()) {
-                    $this->line(" - No pending notifications.");
-                    continue;
-                }
-
-                try {
-                    // create batch (no stage needed anymore)
-                    $batch = $processor->createBatch(
-                        $moduleName,
-                        $settings->role,
-                        $start,
-                        $end
-                    );
-
-                    //Send batch email
-                    $notificationService->sendBatch($batch, $notifications);
-
-                    // Mark notifications sent
-                    WorkflowNotification::whereIn('id', $notifications->pluck('id'))
-                        ->update([
-                            'status' => 'sent',
-                            'sent_at' => now(),
-                        ]);
-
-                    // Update batch
-                    $processor->markSent($batch, $notifications->count());
-
-                    $this->info("Batch sent ({$notifications->count()} items)");
-
-                } catch (\Exception $e) {
-                    $this->error("Batch failed: " . $e->getMessage());
+                if (isset($batch)) {
+                    $processor->markFailed($batch, $e->getMessage());
                 }
             }
         }
+
+        return Command::SUCCESS;
     }
 
     private function shouldSendToday($setting)
@@ -111,7 +132,7 @@ class SendWorkflowBatchCommand extends Command
         if ($this->option('force')) return true;
 
         $timezone = $setting->timezone ?? config('app.timezone', 'UTC');
-        $now = Carbon::now($timezone);
+        $now = now()->timezone($timezone);
 
         if ($setting->last_run_at) {
             $lastRun = Carbon::parse($setting->last_run_at)->timezone($timezone);
