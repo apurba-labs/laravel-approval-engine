@@ -13,7 +13,6 @@ return new class extends Migration
             $table->id();
             $table->string('module');
             $table->string('role')->comment('Role for which this batch applies');
-            $table->integer('stage');
             $table->string('token')->unique();
             $table->timestamp('window_start');
             $table->timestamp('window_end');
