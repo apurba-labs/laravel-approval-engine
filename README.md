@@ -134,7 +134,7 @@ composer require apurba-labs/laravel-approval-engine
 ```bash
 php artisan vendor:publish --tag=approval-config
 php artisan migrate
-php artisan db:seed --class="ApurbaLabs\ApprovalEngine\Database\Seeders\WorkflowSeeder"
+php artisan db:seed --class="ApurbaLabs\ApprovalEngine\Database\Seeders\WorkflowDatabaseSeeder"
 php artisan db:seed --class="ApurbaLabs\ApprovalEngine\Database\Seeders\WorkflowSettingSeeder"
 
 ```

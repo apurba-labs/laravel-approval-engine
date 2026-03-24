@@ -27,7 +27,8 @@ return new class extends Migration
 
             $table->boolean('is_sent')->default(false);
             $table->timestamp('sent_at')->nullable();
-
+            $table->string('status')->default('pending')->comment('pending, sent, failed');; // pending, sent, failed
+            $table->text('error')->nullable();
             $table->timestamps();
 
             // Foreign Key Constraints for Data Integrity

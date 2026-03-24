@@ -2,6 +2,9 @@
 
 namespace ApurbaLabs\ApprovalEngine\Actions;
 
+use ApurbaLabs\ApprovalEngine\Engine\WorkflowEngine;
+use ApurbaLabs\ApprovalEngine\Events\WorkflowCompleted;
+
 class CompleteWorkflowAction
 {
     public function execute($batch)

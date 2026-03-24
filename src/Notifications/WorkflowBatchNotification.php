@@ -11,12 +11,18 @@ class WorkflowBatchNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
+    public $batch;
+    public $records;
+    public $module;
+
     /**
      * Create a new notification instance.
      */
-    public function __construct()
+    public function __construct($batch, $records = null, $module = null)
     {
-        //
+        $this->batch = $batch;
+        $this->records = $records;
+        $this->module = $module;
     }
 
     /**

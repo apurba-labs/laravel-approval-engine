@@ -12,6 +12,8 @@ use ApurbaLabs\ApprovalEngine\Support\BatchProcessor;
 use ApurbaLabs\ApprovalEngine\Support\BatchWindowResolver;
 
 use ApurbaLabs\ApprovalEngine\Models\WorkflowSetting;
+use ApurbaLabs\ApprovalEngine\Models\WorkflowNotification;
+use ApurbaLabs\ApprovalEngine\Services\NotificationService;
 
 class SendWorkflowBatchCommand extends Command
 {
@@ -23,17 +25,19 @@ class SendWorkflowBatchCommand extends Command
     {
         $engine = app(WorkflowEngine::class);
         $processor = app(BatchProcessor::class);
-        $stageNavigator = app(StageNavigator::class);
         $windowResolver = app(BatchWindowResolver::class);
+        $notificationService = app(NotificationService::class);
 
         $modules = $engine->discoverModules();
+
         if (empty($modules)) {
-            $this->warn('No workflow modules discovered in ' . config('approval-engine.modules_path'));
+            $this->warn('No workflow modules discovered.');
             return Command::SUCCESS;
         }
 
         foreach ($modules as $module) {
-            $moduleName = $module->name(); 
+
+            $moduleName = $module->name();
             $this->info("Processing module: {$moduleName}");
 
             $settingsList = WorkflowSetting::where('module', $moduleName)
@@ -41,46 +45,63 @@ class SendWorkflowBatchCommand extends Command
                 ->get();
 
             foreach ($settingsList as $settings) {
-                $shouldSendToday = $this->shouldSendToday($settings);
-                
-                if (!$shouldSendToday) continue;
+
+                if (!$this->shouldSendToday($settings)) {
+                    continue;
+                }
 
                 $settings->update(['last_run_at' => now()]);
 
-                $this->info("Processing module: {$moduleName} for Role: {$settings->role}");
+                $this->info("Processing role: {$settings->role}");
 
                 $window = $windowResolver->resolve($settings);
                 $start = $window['start'] ?? now()->subDay();
                 $end = $window['end'] ?? now();
 
-                DB::enableQueryLog();
-                $records = $engine->getApprovedRecords(
-                    $moduleName,
-                    $start,
-                    $end
-                );
+                $existing = $processor->findExistingBatch($moduleName, $settings->role, $start, $end);
+                if ($existing) {
+                    $this->line("Batch already exists, skipping...");
+                    continue;
+                }
+                // Notifications
+                $notifications = WorkflowNotification::where('module', $moduleName)
+                    ->where('role', $settings->role)
+                    ->where('status', 'pending')
+                    ->whereBetween('created_at', [$start, $end])
+                    ->get();
 
-                if ($records->isEmpty()) {
-                    $this->line(" - No records found for this window.");
+                if ($notifications->isEmpty()) {
+                    $this->line(" - No pending notifications.");
                     continue;
                 }
 
-                $stageByRole = $stageNavigator->getStageByRole($moduleName, $settings->role);
-
                 try {
+                    // create batch (no stage needed anymore)
                     $batch = $processor->createBatch(
                         $moduleName,
                         $settings->role,
-                        $stageByRole->stage,
                         $start,
                         $end
                     );
-                    $processor->markSent($batch, $records->count());
+
+                    //Send batch email
+                    $notificationService->sendBatch($batch, $notifications);
+
+                    // Mark notifications sent
+                    WorkflowNotification::whereIn('id', $notifications->pluck('id'))
+                        ->update([
+                            'status' => 'sent',
+                            'sent_at' => now(),
+                        ]);
+
+                    // Update batch
+                    $processor->markSent($batch, $notifications->count());
+
+                    $this->info("Batch sent ({$notifications->count()} items)");
 
                 } catch (\Exception $e) {
-                    dump("BATCH CREATION FAILED: " . $e->getMessage());
+                    $this->error("Batch failed: " . $e->getMessage());
                 }
-                $this->info("Batch created for module: {$moduleName}");
             }
         }
     }

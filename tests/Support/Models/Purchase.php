@@ -5,6 +5,9 @@ namespace ApurbaLabs\ApprovalEngine\Tests\Support\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Factories\Factory; 
+
+use ApurbaLabs\ApprovalEngine\Tests\Support\Factories\PurchaseFactory;
 
 class Purchase extends Model
 {
@@ -20,8 +23,8 @@ class Purchase extends Model
     {
         return $this->belongsTo(User::class, 'created_by');
     }
-    protected static function newFactory()
+    protected static function newFactory(): Factory
     {
-        return \ApurbaLabs\ApprovalEngine\Tests\Factories\PurchaseFactory::new();
+        return PurchaseFactory::new();
     }
 }

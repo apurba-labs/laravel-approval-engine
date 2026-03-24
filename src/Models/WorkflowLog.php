@@ -4,7 +4,7 @@ namespace ApurbaLabs\ApprovalEngine\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-
+use Illuminate\Database\Eloquent\Factories\Factory; 
 use ApurbaLabs\ApprovalEngine\Database\Factories\WorkflowLogFactory;
 
 class WorkflowLog extends Model

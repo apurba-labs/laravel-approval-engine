@@ -29,7 +29,7 @@ class WorkflowEngine
             : $module;
 
         $moduleName = $moduleInstance->name();
-        //dump("Batch validation failed for: " . $moduleName);
+
         try {
             $moduleInstance->validate($data);
 

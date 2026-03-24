@@ -5,7 +5,7 @@ namespace ApurbaLabs\ApprovalEngine\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-
+use Illuminate\Database\Eloquent\Factories\Factory; 
 use ApurbaLabs\ApprovalEngine\Models\WorkflowNotification;
 use ApurbaLabs\ApprovalEngine\Database\Factories\WorkflowInstanceFactory;
 class WorkflowInstance extends Model

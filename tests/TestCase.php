@@ -5,11 +5,31 @@ namespace ApurbaLabs\ApprovalEngine\Tests;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Orchestra\Testbench\TestCase as BaseTestCase;
 
+use Illuminate\Support\Facades\Schema;
+
 use ApurbaLabs\ApprovalEngine\ApprovalEngineServiceProvider;
 
 abstract class TestCase extends BaseTestCase
 {
-    use RefreshDatabase; // Handles migration and transactions automatically
+    use RefreshDatabase; // Handles migration reset + transactions automatically
+    // use \Illuminate\Foundation\Testing\DatabaseTransactions; // Keep data isolated per test
+
+    /**
+     * Indicates whether the default seeder should run before each test.
+     *
+     * @var bool
+     */
+    protected $seed = false;
+
+    /**
+     * Get the path to the .env testing file.
+     *
+     * @return string
+     */
+    protected function getEnvironmentFilePath()
+    {
+        return __DIR__ . '/../.env.testing';
+    }
 
     /**
      * This is the "Testbench" way to load migrations. 
@@ -17,25 +37,31 @@ abstract class TestCase extends BaseTestCase
      */
     protected function defineDatabaseMigrations()
     {
-        // Force the Laravel 'users' migration to register first
-        // This looks into the vendor folder of the testbench app
-        $this->loadLaravelMigrations(); 
+        // Load Laravel's default migrations path so migrate:fresh runs users table migration.
+        $this->loadMigrationsFrom(\Orchestra\Testbench\default_migration_path());
 
-        // Dynamic check: Add role_id if it doesn't exist
-        if (!Schema::hasColumn('users', 'role_id')) {
-            Schema::table('users', function (Blueprint $table) {
-                $table->unsignedBigInteger('role_id')->nullable()->after('id');
-            });
-        }
+        // Force absolute verified path for package helper migrations (roles, purchases, requisitions etc.)
+        $path = realpath(__DIR__ . '/Support/Migrations');
 
-        // load your package migrations
+        // Load your Support/Mock migrations (Roles, Purchases, etc.)
+        $this->loadMigrationsFrom($path);
+
+        // Load your package migrations
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
 
-        // //Load test-specific migrations
-        if (is_dir(__DIR__ . '/migrations')) {
-            $this->loadMigrationsFrom(__DIR__ . '/migrations');
-        }
+        // Seed your package after migrations are complete.
+        // $this->seed(\ApurbaLabs\ApprovalEngine\Database\Seeders\WorkflowDatabaseSeeder::class);
+    }
 
+    /**
+     * Automatically seed each test with this seeder.
+     * @return array<int,string>
+     */
+    protected function defineDatabaseSeeders()
+    {
+        return [
+            \ApurbaLabs\ApprovalEngine\Database\Seeders\WorkflowDatabaseSeeder::class,
+        ];
     }
 
     /**
@@ -44,9 +70,6 @@ abstract class TestCase extends BaseTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
-        // Run your Seeders after migrations are finished
-        $this->seed(\ApurbaLabs\ApprovalEngine\Database\Seeders\DatabaseSeeder::class);
     }
 
     /**
@@ -76,19 +99,27 @@ abstract class TestCase extends BaseTestCase
     } */
     protected function getEnvironmentSetUp($app)
     {
-        // Set the default connection to testing (sqlite in-memory)
+        // Use testing connection with MySQL for RefreshDatabase compliance
         $app['config']->set('database.default', 'testing');
         $app['config']->set('database.connections.testing', [
-            'driver'   => 'sqlite',
-            'database' => ':memory:',
-            'prefix'   => '',
+            'driver'    => 'mysql',
+            'host'      => env('DB_HOST', '127.0.0.1'),
+            'port'      => env('DB_PORT', '3306'),
+            'database'  => env('DB_DATABASE', 'approval-engine-dev-test'),
+            'username'  => env('DB_USERNAME', 'root'),
+            'password'  => env('DB_PASSWORD', '1234@abcd'),
+            'charset'   => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix'    => '',
+            'strict'    => true,
+            'engine'    => 'InnoDB',
         ]);
 
         // Override the path to point to your package's test modules
-        $app['config']->set('approval-engine.modules_path', __DIR__ . '/Modules');
+        $app['config']->set('approval-engine.modules_path', __DIR__ . '/Support/Modules');
     
         // Override the namespace to match your test modules
-        $app['config']->set('approval-engine.modules_namespace', 'ApurbaLabs\\ApprovalEngine\\Tests\\Modules\\');
+        $app['config']->set('approval-engine.modules_namespace', 'ApurbaLabs\\ApprovalEngine\\Tests\\Support\\Modules\\');
 
         // Ensure web middleware is present
         $app['router']->aliasMiddleware('auth', \Illuminate\Auth\Middleware\Authenticate::class);

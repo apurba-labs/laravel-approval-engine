@@ -9,8 +9,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            WorkflowSettingSeeder::class, 
-            WorkflowSeeder::class,
+            WorkflowDatabaseSeeder::class, 
         ]);
     }
 }

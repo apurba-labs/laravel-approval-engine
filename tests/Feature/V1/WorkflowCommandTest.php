@@ -1,21 +1,23 @@
 <?php
 
-namespace ApurbaLabs\ApprovalEngine\Tests\Feature;
+namespace ApurbaLabs\ApprovalEngine\Tests\Feature\V1;
 
 use ApurbaLabs\ApprovalEngine\Tests\TestCase; 
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
-use ApurbaLabs\ApprovalEngine\Database\Seeders\WorkflowSeeder;
+use ApurbaLabs\ApprovalEngine\Database\Seeders\WorkflowDatabaseSeeder;
 use ApurbaLabs\ApprovalEngine\Engine\WorkflowEngine;
 use ApurbaLabs\ApprovalEngine\Contracts\WorkflowModuleInterface;
 use ApurbaLabs\ApprovalEngine\Enums\WorkflowStatus;
 
 
 use ApurbaLabs\ApprovalEngine\Models\WorkflowBatch;
-use ApurbaLabs\ApprovalEngine\Tests\Models\User;
-use ApurbaLabs\ApprovalEngine\Tests\Models\Requisition;
+use ApurbaLabs\ApprovalEngine\Models\WorkflowSetting;
 
-use ApurbaLabs\ApprovalEngine\Tests\Modules\RequisitionModule;
+use ApurbaLabs\ApprovalEngine\Tests\Support\Models\User;
+use ApurbaLabs\ApprovalEngine\Tests\Support\Models\Role;
+use ApurbaLabs\ApprovalEngine\Tests\Support\Models\Requisition;
+
+use ApurbaLabs\ApprovalEngine\Tests\Support\Modules\RequisitionModule;
 
 use Illuminate\Support\Facades\Mail;
 use ApurbaLabs\ApprovalEngine\Mail\BatchApprovalMail;
@@ -26,44 +28,27 @@ use Illuminate\Support\Facades\DB;
 
 class WorkflowCommandTest extends TestCase
 {
-    use RefreshDatabase;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->loadLaravelMigrations();
-        $this->seed(WorkflowSeeder::class);
-    }
-
-    /** @test */
+    /** @test 
+     * @group v1
+    */
     public function workflow_command_runs_successfully()
     {
         // 1. Set a fixed Monday for the test (e.g., March 16, 2026 is a Monday)
         $testTime = Carbon::create(2026, 3, 16, 10, 0, 0, 'Asia/Dhaka');
         $this->travelTo($testTime);
-
+        
         try {
-            // 2. Ensure the setting matches the Day and Time we travelled to
-            \DB::table('workflow_settings')
-                ->updateOrInsert(
-                    ['role' => 'HOSD', 'module' => 'requisition'],
-                    [
-                        'frequency' => 'weekly',
-                        'weekly_day' => 1, // Monday
-                        'send_time' => '09:00:00', // 09:00 is before our 10:00 travel time
-                        'is_active' => true,
-                        'last_run_at' => null, // Ensure it hasn't run yet
-                        'timezone' => 'Asia/Dhaka'
-                    ]
-                );
+            // Ensure the setting matches the Day and Time we travelled to
+            WorkflowSetting::factory()
+                ->forModule('requisition')
+                ->forRole('HOSD')
+                ->atSendTime('09:00:00')
+                ->atFrequency('weekly', 1) 
+                ->create();
 
-            $user = User::create([
-                'name' => 'Apurba',
-                'email' => 'apurba@example.com',
-                'password' => bcrypt('password'),
-            ]);
+            $user = Role::where('name', 'HOSD')->first()?->users()->first() ?? User::factory()->withRole('HOSD')->create();
 
-            // 3. Create the record approved WITHIN the weekly window
+            // Create the record approved WITHIN the weekly window
             // The window will be roughly March 9th to March 16th.
             Requisition::create([
                 'user_id' => $user->id,
@@ -94,14 +79,18 @@ class WorkflowCommandTest extends TestCase
         $this->assertNotNull($batch->token);
     }
 
-    /** @test */
+    /** @test 
+     * @group v1
+    */
     public function test_make_workflow_module_command()
     {
         $this->artisan('make:workflow-module TestModule')
             ->assertExitCode(0);
     }
 
-    /** @test */
+    /** @test 
+     * @group v1
+    */
     public function it_can_discover_modules_automatically()
     {
         $engine = app(WorkflowEngine::class);
@@ -113,24 +102,21 @@ class WorkflowCommandTest extends TestCase
         $this->assertInstanceOf(WorkflowModuleInterface::class, $modules[0]);
         
     }
-    /** @test */
+    /** @test 
+     * @group v1
+    */
     public function it_can_display_user_names_from_relationship()
     {
-        DB::table('workflow_settings')
-            ->where('role', 'HOSD')
-            ->where('module', 'requisition')
-            ->update([
-                'frequency' => 'weekly',
-                'weekly_day' => 1, // Monday
-                'send_time' => '09:00:00',
-                'is_active' => true,
-            ]);
 
-        $user = User::create([
-                'name' => 'Apurba',
-                'email' => 'apurba2@example.com',
-                'password' => bcrypt('password'),
-            ]);
+        WorkflowSetting::factory()
+                ->forModule('requisition')
+                ->forRole('HOSD')
+                ->atFrequency('weekly', 1) 
+                ->atSendTime('09:00:00')
+                ->create();
+
+
+        $user = Role::where('name', 'HOSD')->first()?->users()->first() ?? User::factory()->withRole('HOSD')->create();
 
         $req = Requisition::create([
             'user_id' => $user->id,
@@ -152,25 +138,20 @@ class WorkflowCommandTest extends TestCase
         $this->assertEquals('Apurba', data_get($records->first(), 'user.name'));
     }
 
-    /** @test */
+    /** @test 
+     * @group v1
+    */
     public function it_only_runs_weekly_batches_on_the_correct_day()
     {
         // Setup the Setting once (Monday, 09:00 AM)
-        DB::table('workflow_settings')->updateOrInsert(
-            ['role' => 'HOSD', 'module' => 'requisition'],
-            [
-                'frequency' => 'weekly',
-                'weekly_day' => 1, // Monday
-                'send_time' => '09:00:00',
-                'is_active' => true,
-                'last_run_at' => null,
-                'timezone' => 'Asia/Dhaka'
-            ]
-        );
+        WorkflowSetting::factory()
+                ->forModule('requisition')
+                ->forRole('HOSD')
+                ->atFrequency('weekly', 1) 
+                ->atSendTime('09:00:00')
+                ->create();
 
-        $user = User::create([
-            'name' => 'Apurba', 'email' => 'a@test.com', 'password' => 'pass'
-        ]);
+        $user = Role::where('name', 'HOSD')->first()?->users()->first() ?? User::factory()->withRole('HOSD')->create();
 
         // Test Sunday: Should NOT create a batch for 'HOSD'
         $sunday = now()->startOfWeek()->subDay()->setHour(10);
@@ -213,7 +194,9 @@ class WorkflowCommandTest extends TestCase
         ]);
     }
 
-    /** @test */
+    /** @test 
+     * @group v1
+    */
     public function workflow_command_creates_batch_and_sends_email()
     {
         $this->withoutExceptionHandling(); 
@@ -224,11 +207,7 @@ class WorkflowCommandTest extends TestCase
         $testTime = Carbon::create(2026, 3, 16, 10, 0, 0, 'Asia/Dhaka');
         $this->travelTo($testTime);
 
-        $user = User::create([
-            'name' => 'Apurba',
-            'email' => 'apurbansingh@yahoo.com',
-            'password' => bcrypt('password'),
-        ]);
+        $user = Role::where('name', 'HOSD')->first()?->users()->first() ?? User::factory()->withRole('HOSD')->create();
 
         // Create an approved requisition within the daily window
         Requisition::create([
@@ -239,19 +218,16 @@ class WorkflowCommandTest extends TestCase
         ]);
 
         // Ensure the setting is Active and due to run
-        DB::table('workflow_settings')->updateOrInsert(
-            ['module' => 'requisition', 'role' => 'HOSD'],
-            [
-                'frequency' => 'daily',
-                'send_time' => '09:00:00',
-                'is_active' => true,
-                'last_run_at' => null,
-                'timezone' => 'Asia/Dhaka'
-            ]
-        );
+        WorkflowSetting::factory()
+            ->forModule('requisition')
+            ->forRole('HOSD')
+            ->atFrequency('weekly', 1) 
+            ->atSendTime('09:00:00')
+            ->create();
 
         $this->artisan('approval:send-batch')->assertExitCode(0);
 
+        
         Mail::assertSent(BatchApprovalMail::class);
 
         // 5. If the above passes, check the recipient count

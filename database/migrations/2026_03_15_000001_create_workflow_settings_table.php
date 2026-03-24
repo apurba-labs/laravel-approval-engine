@@ -13,7 +13,7 @@ return new class extends Migration
                 $table->id();
                 $table->string('module', 150)->comment('Module for which this setting applies');
                 $table->string('role')->comment('Role for which this setting applies');
-                $table->enum('frequency', ['daily', 'weekly', 'monthly'])->comment('daily, weekly, monthly');
+                $table->enum('frequency', ['instant', 'daily', 'weekly', 'monthly'])->comment('instant', 'daily, weekly, monthly');
                 $table->tinyInteger('weekly_day')->nullable()->comment('0=Sunday, 1=Monday ... 6=Saturday');
                 $table->tinyInteger('monthly_date')->nullable()->comment('1-31');
                 $table->time('send_time')->default('12:00:00')->comment('HH:mm');

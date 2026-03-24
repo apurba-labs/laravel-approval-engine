@@ -57,11 +57,26 @@ class WorkflowSettingFactory extends Factory
         return $this->state(fn () => ['send_time' => $sendTime]);
     }
 
-    /**
-     * Set a dynamic frequency (needs to be a string: 'instant', 'daily', etc.)
+   /**
+     * Set a dynamic frequency with optional day/date values.
+     * 
+     * @param string $frequency ('instant', 'daily', 'weekly', 'monthly')
+     * @param int|null $freqVal (Day 0-6 for weekly, Date 1-31 for monthly)
      */
-    public function atFrequency(string $frequency) 
+    public function atFrequency(string $frequency, $freqVal = null) 
     {
-        return $this->state(fn () => ['frequency' => $frequency]);
+        return $this->state(function (array $attributes) use ($frequency, $freqVal) {
+            $data = ['frequency' => $frequency];
+
+            if ($frequency === 'weekly') {
+                $data['weekly_day'] = $freqVal ?? 0; // Default to Monday if null
+            }
+
+            if ($frequency === 'monthly') {
+                $data['monthly_date'] = $freqVal ?? 1; // Default to 1st if null
+            }
+
+            return $data;
+        });
     }
 }
