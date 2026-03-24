@@ -46,7 +46,6 @@ class SendWorkflowBatchCommand extends Command
             try {
                 $module = $engine->getModule($moduleName);
             } catch (\Exception $e) {
-                dump("No active settings found in DB during command run! Module: {$e}");
                 $this->error("Module not found: {$moduleName}");
                 continue;
             }
@@ -115,7 +114,6 @@ class SendWorkflowBatchCommand extends Command
                 $this->info("Batch sent ({$notifications->count()})");
 
             } catch (\Exception $e) {
-                dump("No active settings found in DB during command run! Module: {$e}");
                 $this->error("Batch failed: " . $e->getMessage());
 
                 if (isset($batch)) {
