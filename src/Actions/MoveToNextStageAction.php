@@ -44,7 +44,6 @@ class MoveToNextStageAction
             return WorkflowBatch::create([
                 'module'       => $batch->module,
                 'role'         => $nextStage->role,
-                'stage'        => $nextStage->stage_order,
                 'token'        => WorkflowBatch::generateToken(),
                 'status'       => 'pending',
                 'window_start' => $start,

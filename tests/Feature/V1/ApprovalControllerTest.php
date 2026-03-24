@@ -22,7 +22,7 @@ class ApprovalControllerTest extends TestCase
         
         $user = Role::where('name', 'HOSD')->first()?->users()->first() ?? User::factory()->withRole('HOSD')->create();
         $stage = WorkflowStage::factory()->forModule('requisition')->forRole('HOSD')->atStage(1)->create();
-        $batch = WorkflowBatch::factory()->forModule('requisition')->forRole('HOSD')->withToken('secure-token-12345')->atStage($stage->stage_order)->completed()->create();
+        $batch = WorkflowBatch::factory()->forModule('requisition')->forRole('HOSD')->withToken('secure-token-12345')->completed()->create();
 
         //Mock the WorkflowEngine to expect the approveBatch call
         $this->mock(WorkflowEngine::class, function (MockInterface $mock) use ($batch, $user) {

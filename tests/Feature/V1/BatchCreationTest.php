@@ -24,7 +24,7 @@ class BatchCreationTest extends TestCase
     public function test_batch_is_created()
     {
         $stage = WorkflowStage::factory()->forModule('requisition')->forRole('HOSD')->atStage(1)->create();
-        $batch = WorkflowBatch::factory()->forModule('requisition')->withToken('testtoken')->forRole('HOSD')->atStage($stage->stage_order)->completed()->create();
+        $batch = WorkflowBatch::factory()->forModule('requisition')->withToken('testtoken')->forRole('HOSD')->completed()->create();
 
         $this->assertDatabaseHas('workflow_batches', [
             'token' => 'testtoken',

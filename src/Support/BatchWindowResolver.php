@@ -10,7 +10,7 @@ class BatchWindowResolver
     {
         $timezone = $setting->timezone ?? config('app.timezone', 'UTC');
         
-        $now = Carbon::now($timezone);
+        $now = now()->timezone($timezone);
         
         $end = $now->copy();
 

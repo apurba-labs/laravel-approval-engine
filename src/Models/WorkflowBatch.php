@@ -17,7 +17,6 @@ class WorkflowBatch extends Model
     protected $fillable = [
         'role', 
         'module',
-        'stage',
         'token',
         'window_start',
         'window_end',

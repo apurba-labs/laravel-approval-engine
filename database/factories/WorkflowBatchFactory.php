@@ -29,7 +29,6 @@ class WorkflowBatchFactory extends Factory
             'module' => 'requisition',
             'role' => 'HOSD',
             'token' => Str::random(32),
-            'stage' => 1,
             'window_start' => now()->subDay(),
             'window_end' => now(),
             'status' => 'pending',
@@ -39,6 +38,5 @@ class WorkflowBatchFactory extends Factory
     public function forModule(string $name){ return $this->state(fn () => ['module' => $name]); }
     public function forRole(string $role) { return $this->state(fn() => ['role' => $role]); }
     public function withToken(string $token){ return $this->state(fn () => ['token' => $token]); }
-    public function atStage(int $order){ return $this->state(fn () => ['stage' => $order]); }
     public function completed() { return $this->state(fn() => ['status' => 'completed', 'completed_at' => now()]); }
 }

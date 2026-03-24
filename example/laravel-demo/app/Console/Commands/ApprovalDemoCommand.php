@@ -66,7 +66,6 @@ class ApprovalDemoCommand extends Command
         $batch = $processor->createBatch(
             'requisition', 
             'HOSD', 
-            2,     
             now()->subDay(), 
             now() 
         );

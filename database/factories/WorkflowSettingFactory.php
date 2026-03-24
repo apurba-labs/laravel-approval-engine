@@ -30,7 +30,8 @@ class WorkflowSettingFactory extends Factory
             'frequency' => 'daily',
             'send_time' => '12:00:00',
             'timezone' => 'Asia/Dhaka',
-            'is_active' => true,
+            'is_active' => 1,
+            'last_run_at' => null
         ];
     }
     /**
@@ -69,14 +70,15 @@ class WorkflowSettingFactory extends Factory
             $data = ['frequency' => $frequency];
 
             if ($frequency === 'weekly') {
-                $data['weekly_day'] = $freqVal ?? 0; // Default to Monday if null
+                $data['weekly_day'] = $freqVal ?? 1; // Default to 1 (Monday)
             }
 
             if ($frequency === 'monthly') {
-                $data['monthly_date'] = $freqVal ?? 1; // Default to 1st if null
+                $data['monthly_date'] = $freqVal ?? 1; // Default to 1st
             }
 
-            return $data;
+            return $data; // Ensure this is ALWAYS returned
         });
     }
+
 }
