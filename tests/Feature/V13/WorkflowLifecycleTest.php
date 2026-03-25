@@ -2,13 +2,16 @@
 namespace ApurbaLabs\ApprovalEngine\Tests\Feature\V13;
 
 use ApurbaLabs\ApprovalEngine\Tests\TestCase;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Notification;
 
-use ApurbaLabs\ApprovalEngine\Models\{WorkflowRule, WorkflowInstance, WorkflowLog, WorkflowNotification, WorkflowSetting};
+use ApurbaLabs\ApprovalEngine\Models\{WorkflowRule, WorkflowInstance, WorkflowLog, WorkflowNotification, WorkflowSetting, WorkflowStage};
 use ApurbaLabs\ApprovalEngine\Tests\Support\Models\User;
+use ApurbaLabs\ApprovalEngine\Tests\Support\Models\Role;
 
 use ApurbaLabs\ApprovalEngine\Engine\WorkflowEngine;
-use Illuminate\Support\Facades\Notification;
 use ApurbaLabs\ApprovalEngine\Notifications\WorkflowSingleNotification;
+use ApurbaLabs\ApprovalEngine\Notifications\WorkflowBatchNotification;
 
 class WorkflowLifecycleTest extends TestCase
 {
@@ -18,63 +21,72 @@ class WorkflowLifecycleTest extends TestCase
     */
     public function it_executes_the_full_v13_instance_lifecycle()
     {
-        $this->assertTrue(true);
-        
-        /*
         Notification::fake();
+        
+        // Create user (recipient)
+        $user = Role::where('name', 'COO')->first()?->users()->first() ?? User::factory()->withRole('COO')->create();
 
-        // 1. Setup: Create a Rule that routes > 5000 to 'COO'
-        WorkflowRule::create([
+        WorkflowStage::factory()->create([
             'module' => 'purchase',
-            'field' => 'total_amount',
-            'operator' => '>',
-            'value' => '5000',
+            'stage_order' => 1,
             'role' => 'COO',
-            'priority' => 10
         ]);
+        // Rule: purchase > 5000 → COO
+        WorkflowRule::factory()
+            ->forModule('purchase')
+            ->forField('total_amount')
+            ->withOperator('>')
+            ->withValue('5000')
+            ->targetRole('COO')
+            ->withPriority(10)
+            ->create();
 
-        // Setup: Create an 'instant' notification setting for COO
-        WorkflowSetting::create([
+        // Setting: instant notification for COO
+        WorkflowSetting::factory()->create([
             'module' => 'purchase',
             'role' => 'COO',
-            'frequency' => 'instant',
-            'is_active' => true
+            'frequency' => 'instant', // IMPORTANT
+            'is_active' => 1,
+            'send_time' => '00:00:00'
         ]);
 
         $engine = app(WorkflowEngine::class);
-        $data = ['total_amount' => 7500, 'description' => 'Test Purchase'];
 
-        // --- TEST 1 & 2: Start & Rule Resolver ---
+        $data = [
+            'total_amount' => 7500,
+            'user_id' => $user->id // REQUIRED for recipient
+        ];
+
+        // --- TEST: Start ---
         $instance = $engine->start('purchase', $data);
 
+        // Rule applied → COO
         $this->assertDatabaseHas('workflow_instances', [
             'id' => $instance->id,
             'module' => 'purchase',
-            'role' => 'COO', // Verify Rule Resolver worked (Test 2)
+            'current_stage_order' => 1,
             'status' => 'pending'
         ]);
 
-        // --- TEST 5: Metrics & Logs ---
+        // --- TEST: Logs ---
         $this->assertDatabaseHas('workflow_logs', [
             'workflow_instance_id' => $instance->id,
             'role' => 'COO',
-            'entered_at' => now()->toDateTimeString()
         ]);
 
-        // --- TEST 3: Notification & Instant Queue ---
-        // Verify the notification record exists
+        // --- TEST: Notification created ---
         $this->assertDatabaseHas('workflow_notifications', [
             'workflow_instance_id' => $instance->id,
             'role' => 'COO',
-            'is_sent' => true // Should be true because frequency was 'instant'
+            'status' => 'sent',
+            'recipient_id' => $user->id,
         ]);
 
-        // Verify the actual Mail/Notification was sent
+        // --- TEST: Notification actually sent ---
         Notification::assertSentTo(
-            new User(),
+            $user,
             WorkflowSingleNotification::class
         );
-        */
     }
 
     /** @test 
@@ -82,31 +94,71 @@ class WorkflowLifecycleTest extends TestCase
     */
     public function it_batches_notifications_correctly_for_non_instant_settings()
     {
-        $this->assertTrue(true);
-    /*
-        // Setup: Set frequency to 'daily'
-        WorkflowSetting::create([
-            'module' => 'purchase', 'role' => 'HOD', 'frequency' => 'daily'
+        Notification::fake();
+
+        // Create user (recipient)
+        $user = Role::where('name', 'HOSD')->first()?->users()->first() ?? User::factory()->withRole('HOSD')->create();
+
+        // Stage → HOSD
+        WorkflowStage::factory()->create([
+            'module' => 'purchase',
+            'stage_order' => 1,
+            'role' => 'HOSD',
+        ]);
+
+        // Setting → daily (NOT instant)
+        WorkflowSetting::factory()->create([
+            'module' => 'purchase',
+            'role' => 'HOSD',
+            'frequency' => 'daily', // batching mode
+            'is_active' => 1,
+            'send_time' => '00:00:00'
         ]);
 
         $engine = app(WorkflowEngine::class);
-        
-        // Start two workflows
-        $engine->start('purchase', ['total_amount' => 100]);
-        $engine->start('purchase', ['total_amount' => 200]);
 
-        // --- TEST 4: Batching ---
-        // Run your Artisan command
+        // Start two workflows
+        $engine->start('purchase', [
+            'total_amount' => 100,
+            'user_id' => $user->id
+        ]);
+
+        $engine->start('purchase', [
+            'total_amount' => 200,
+            'user_id' => $user->id
+        ]);
+
+        // --- ASSERT: Notifications created but NOT sent yet ---
+        $this->assertEquals(
+            2,
+            WorkflowNotification::where('status', 'pending')->count()
+        );
+
+        // --- RUN BATCH COMMAND ---
         $this->artisan('approval:send-batch')->assertExitCode(0);
 
+        // --- ASSERT: Batch created ---
         $this->assertDatabaseHas('workflow_batches', [
             'module' => 'purchase',
-            'role' => 'HOD',
+            'role' => 'HOSD',
             'item_count' => 2
         ]);
 
-        // Check that notifications are now linked to the batch
-        $this->assertEquals(0, WorkflowNotification::where('is_sent', false)->count());
-    */
+        // --- ASSERT: Notifications marked as sent ---
+        $this->assertEquals(
+            0,
+            WorkflowNotification::where('status', 'pending')->count()
+        );
+
+        $this->assertEquals(
+            2,
+            WorkflowNotification::where('status', 'sent')->count()
+        );
+
+        // --- ASSERT: Batch notification sent ---
+        Notification::assertSentTo(
+            $user,
+            \ApurbaLabs\ApprovalEngine\Notifications\WorkflowBatchNotification::class
+        );
     }
 }

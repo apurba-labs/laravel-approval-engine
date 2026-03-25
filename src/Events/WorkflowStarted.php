@@ -9,25 +9,20 @@ use Illuminate\Support\Collection;
 
 class WorkflowStarted
 {
-    use Dispatchable, SerializesModels;
+    protected Collection $workflows;
 
-    /**
-     * @var WorkflowBatch|Collection
-     */
-    public $workflows;
-
-    /**
-     * @param WorkflowBatch|Collection $workflows
-     */
     public function __construct($workflows)
     {
-        $this->workflows = $workflows;
-        
+        // Normalize input
+        if ($workflows instanceof Collection) {
+            $this->workflows = $workflows;
+        } else {
+            $this->workflows = collect([$workflows]);
+        }
     }
-    
+
     public function workflows(): Collection
     {
-
-        return collect([$this->workflows]);
+        return $this->workflows;
     }
 }

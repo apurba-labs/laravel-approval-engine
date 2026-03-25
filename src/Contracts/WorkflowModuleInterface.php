@@ -50,6 +50,8 @@ interface WorkflowModuleInterface
      */
     public function approvedColumn(): string;
 
+    public function resolveRecipient($workflow, $role);
+
      /** The state column (status) */
     public function statusColumn(): string;
 

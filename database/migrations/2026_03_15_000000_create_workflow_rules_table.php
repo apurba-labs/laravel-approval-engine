@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('value');
             $table->string('role');
             $table->integer('priority');
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }

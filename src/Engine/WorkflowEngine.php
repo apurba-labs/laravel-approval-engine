@@ -22,19 +22,29 @@ use RuntimeException;
 
 class WorkflowEngine
 {
-    public function start($module, array $data): Collection
+   public function start($module, array $data): WorkflowInstance
     {
-        $moduleInstance = is_string($module)
-            ? $this->getModule($module)
-            : $module;
+        $stageNavigator = app(StageNavigator::class);
 
-        $moduleName = $moduleInstance->name();
+        try {
+            $moduleInstance = is_string($module)
+                ? $this->getModule($module)
+                : $module;
+
+            $moduleName = $moduleInstance->name();
+
+        } catch (\Exception $e) {
+            throw new \RuntimeException("Invalid module provided Error: {$e}");
+        }
 
         try {
             $moduleInstance->validate($data);
 
-            $stageNavigator = app(StageNavigator::class);
             $firstStage = $stageNavigator->getFirstStage($moduleName);
+
+            if (!$firstStage) {
+                throw new \RuntimeException("No stages configured for module {$moduleName}");
+            }
 
             // create instance
             $workflow = WorkflowInstance::create([
@@ -45,7 +55,7 @@ class WorkflowEngine
                 'started_at' => now(),
             ]);
 
-            // create log (metrics)
+            // create log
             WorkflowLog::create([
                 'workflow_instance_id' => $workflow->id,
                 'module' => $moduleName,
@@ -54,17 +64,16 @@ class WorkflowEngine
                 'entered_at' => now(),
             ]);
 
-            // event
-            event(new WorkflowStarted(collect([$workflow])));
-        
-            return collect([$workflow]);
+            // fire event
+            event(new WorkflowStarted($workflow));
+
+            return $workflow;
 
         } catch (\Exception $e) {
 
-            dump("Batch validation failed for: " . $e);
+            \Log::error("Workflow start failed for {$moduleName}: " . $e->getMessage());
 
-            \Log::warning("Batch validation failed for {$moduleName}: " . $e->getMessage());
-            return collect(); 
+            throw new \RuntimeException($e->getMessage());
         }
     }
     /**

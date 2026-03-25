@@ -59,4 +59,8 @@ class WorkflowRuleFactory extends Factory
     {
         return $this->state(fn () => ['role' => $role]);
     }
+    public function withPriority(int $priority)
+    {
+        return $this->state(fn () => ['priority' => $priority]);
+    }
 }

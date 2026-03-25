@@ -68,16 +68,6 @@ abstract class BaseWorkflowModule implements WorkflowModuleInterface
         return ['*'];
     }
 
-    
-    /**
-     * Default priorities: check for 'user', then 'creator'.
-     * Individual modules can override this.
-     */
-    public function ownerRelations(): array
-    {
-        return ['user', 'creator'];
-    }
-
     /**
      * Automatically merge priorities into eager loading.
      */
@@ -91,6 +81,44 @@ abstract class BaseWorkflowModule implements WorkflowModuleInterface
             $customRelations, 
             $this->ownerRelations()
         ));
+    }
+
+    public function resolveRecipient($workflow, $role)
+    {
+        $payload = $workflow->payload ?? [];
+
+        // priority-based owner resolution
+        foreach ($this->ownerRelations() as $relation) {
+
+            $key = $relation . '_id';
+
+            if (!isset($payload[$key])) {
+                continue;
+            }
+
+            $model = $this->resolveRelationModel($relation);
+
+            if (!$model) {
+                continue;
+            }
+
+            $instance = $model::find($payload[$key]);
+
+            if ($instance) {
+                return $instance;
+            }
+        }
+
+        return null;
+    }
+
+    protected function resolveRelationModel($relation)
+    {
+        $map = method_exists($this, 'relationModels')
+            ? $this->relationModels()
+            : [];
+
+        return $map[$relation] ?? null;
     }
 
     /**

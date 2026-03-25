@@ -6,8 +6,10 @@ use ApurbaLabs\ApprovalEngine\Actions\ApproveBatchAction;
 use ApurbaLabs\ApprovalEngine\Events\BatchApproved;
 use ApurbaLabs\ApprovalEngine\Listeners\HandleBatchApproved;
 
+use ApurbaLabs\ApprovalEngine\Models\WorkflowSetting;
 use ApurbaLabs\ApprovalEngine\Models\WorkflowBatch;
 use ApurbaLabs\ApprovalEngine\Models\WorkflowStage;
+use ApurbaLabs\ApprovalEngine\Models\WorkflowInstance;
 use ApurbaLabs\ApprovalEngine\Models\WorkflowNotification;
 
 use ApurbaLabs\ApprovalEngine\Models\Support\Requisition;
@@ -25,29 +27,44 @@ class EventTest extends TestCase
     /** @test 
      * @group v1
     */
-    public function listener_sends_batch_approval_notification_successfully()
+    public function batch_command_sends_notification_successfully()
     {
         Notification::fake();
 
-        WorkflowBatch::query()->delete();
-        // Ensure the User exists and has the Role
         $user = Role::where('name', 'HOSD')->first()?->users()->first() ?? User::factory()->withRole('HOSD')->create();
 
-        $batch = WorkflowBatch::factory()
-                ->forModule('requisition')
-                ->forRole('HOSD')
-                ->create();
-        // Act
-        event(new BatchApproved($batch));
+        WorkflowSetting::factory()->create([
+            'module' => 'requisition',
+            'role' => 'HOSD',
+            'frequency' => 'daily',
+            'send_time' => '00:00',
+            'is_active' => 1,
+        ]);
 
-        // Use a Callback to match by ID/Email to bypass object instance issues
+        $workflow = WorkflowInstance::factory()->create([
+            'module' => 'requisition',
+            'payload' => [
+                'user_id' => $user->id
+            ]
+        ]);
+
+        WorkflowNotification::factory()->create([
+            'workflow_instance_id' => $workflow->id,
+            'module' => 'requisition',
+            'role' => 'HOSD',
+            'status' => 'pending',
+            'recipient_id' => $user->id,
+            'recipient_type' => User::class,
+            'created_at' => now()->subMinutes(5),
+        ]);
+
+        $this->artisan('approval:send-batch --force');
+
         Notification::assertSentTo(
-            $user, 
-            WorkflowBatchNotification::class,
-            function ($notification) use ($batch) {
-                return $notification->batch->id === $batch->id;
-            }
+            $user,
+            WorkflowBatchNotification::class
         );
     }
+
 
 }

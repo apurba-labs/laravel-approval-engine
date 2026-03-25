@@ -31,21 +31,6 @@ class RequisitionModule extends BaseWorkflowModule
         return ['user'];
     }
 
-    /**
-     * Automatically merge priorities into eager loading.
-     */
-    public function relations(): array
-    {
-        // Start with any custom relations the developer needs
-        $customRelations = $this->customRelations();
-
-        // Merge in the owner priorities so they are always eager-loaded
-        return array_unique(array_merge(
-            $customRelations, 
-            $this->ownerRelations()
-        ));
-    }
-
     public function customRelations(): array
     {
         return []; 
@@ -69,6 +54,14 @@ class RequisitionModule extends BaseWorkflowModule
         return [
             'reference_id' => 'Reference',
             'user.name' => 'Requested By',
+        ];
+    }
+
+   public function relationModels(): array
+    {
+        return [
+            'user' => \ApurbaLabs\ApprovalEngine\Tests\Support\Models\User::class,
+            //'admin' => \App\Models\Admin::class,
         ];
     }
 }

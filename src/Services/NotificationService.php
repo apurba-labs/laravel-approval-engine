@@ -1,94 +1,129 @@
 <?php
+
 namespace ApurbaLabs\ApprovalEngine\Services;
 
-use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Log;
-
-use ApurbaLabs\ApprovalEngine\Models\WorkflowSetting;
-use ApurbaLabs\ApprovalEngine\Mail\BatchApprovalMail;
+use Illuminate\Support\Collection;
+use ApurbaLabs\ApprovalEngine\Models\WorkflowNotification;
+use ApurbaLabs\ApprovalEngine\Notifications\WorkflowBatchNotification;
+use ApurbaLabs\ApprovalEngine\Notifications\WorkflowSingleNotification;
 
 class NotificationService
 {
-    public function sendImmediateIfNeeded($notification)
+    /**
+     * Send immediately if setting is 'instant'
+     */
+    public function sendImmediateIfNeeded(WorkflowNotification $notification): void
     {
         $setting = $this->getSetting($notification);
-
-        if ($setting?->frequency !== 'instant') {
+        
+        if (!$setting || $setting->frequency !== 'instant') {
             return;
         }
 
-        $this->send($notification);
+        $this->sendSingle($notification);
     }
 
-    public function sendBatch($batch, $notifications)
+    /**
+     * Send a single notification (instant mode)
+     */
+    public function sendSingle(WorkflowNotification $notification): void
     {
-        $grouped = $notifications->groupBy('role');
+        try {
+            $recipient = $notification->recipient;
 
-        foreach ($grouped as $role => $items) {
-            $this->sendBatchMail($role, $items, $batch);
+            if (!$recipient) {
+                Log::warning("No recipient for notification {$notification->id}");
+                return;
+            }
+
+            Notification::send(
+                $recipient,
+                new WorkflowSingleNotification($notification)
+            );
+
+            $notification->update([
+                'status'  => 'sent',
+                'sent_at' => now(),
+            ]);
+
+        } catch (\Throwable $e) {
+            $this->markFailed($notification, $e);
         }
     }
 
-    public function send($notification)
+    /**
+     * Send batch notifications (grouped)
+     */
+    public function sendBatch($batch, Collection $notifications): void
     {
-        $channels = config('approval-engine.notification.channels');
+        // recipients (models, not emails)
+        $recipients = $this->resolveBatchRecipients($notifications);
 
-        if ($channels['mail']) {
-            $this->sendMail($notification);
+        if ($recipients->isEmpty()) {
+            Log::warning("Batch {$batch->id} has no recipients.");
+            return;
         }
 
-        if ($channels['slack']) {
-            $this->sendSlack($notification);
+        try {
+            Notification::send(
+                $recipients,
+                new WorkflowBatchNotification($batch, $notifications)
+            );
+
+            // mark all as sent
+            WorkflowNotification::whereIn('id', $notifications->pluck('id'))
+                ->update([
+                    'status'  => 'sent',
+                    'sent_at' => now(),
+                ]);
+
+        } catch (\Throwable $e) {
+
+            // mark all as failed
+            WorkflowNotification::whereIn('id', $notifications->pluck('id'))
+                ->update([
+                    'status' => 'failed',
+                    'error'  => $e->getMessage(),
+                ]);
+
+            Log::error("Batch send failed: " . $e->getMessage());
         }
     }
 
-    protected function sendMail($notification)
+    /**
+     * Resolve recipients from notifications (polymorphic)
+     */
+    protected function resolveBatchRecipients(Collection $notifications): Collection
     {
-        // V1.3 Placeholder: Log the intent instead of sending a real email
-        // This allows you to test the BatchProcessor logic without a Mail Server
-        \Log::info("Workflow Batch Notification Ready", [
-            'notice'   => 'Real Mail/Notification delivery will be implemented in V1.4'
-        ]);
-
+        return $notifications
+            ->map(fn ($n) => $n->recipient)   // MorphTo relation
+            ->filter()                       // remove null
+            ->unique(fn ($model) => get_class($model) . ':' . $model->getKey())
+            ->values();
     }
 
-    protected function sendBatchMail($role, $items, $batch)
+    /**
+     * Fetch setting (used for instant logic)
+     */
+    protected function getSetting(WorkflowNotification $notification)
     {
-
-        // V1.3 Placeholder: Log the intent instead of sending a real email
-        // This allows you to test the BatchProcessor logic without a Mail Server
-        \Log::info("Workflow Batch Notification Ready", [
-            'module'   => $batch->module,
-            'role'     => $role,
-            'items'    => count($items),
-            'batch_id' => $batch->id,
-            'notice'   => 'Real Mail/Notification delivery will be implemented in V1.4'
-        ]);
-
-        //Return true so the BatchProcessor marks these as 'sent' for now
-        return true; 
-    }
-
-    protected function sendSlack($notification)
-    {
-        Log::info("Slack notification: " . json_encode($notification));
-        // future: Slack API integration
-    }
-
-    protected function resolveRecipients($notification)
-    {
-        return \App\Models\User::role($notification->role)->pluck('email')->toArray();
-    }
-
-    protected function resolveBatchRecipients($role)
-    {
-        return \App\Models\User::role($role)->pluck('email')->toArray();
-    }
-
-    protected function getSetting($notification)
-    {
-        return WorkflowSetting::where('module', $notification->module)
+        return \ApurbaLabs\ApprovalEngine\Models\WorkflowSetting::where('module', $notification->module)
             ->where('role', $notification->role)
             ->first();
+    }
+
+    /**
+     * Mark single notification failed
+     */
+    protected function markFailed(WorkflowNotification $notification, \Throwable $e): void
+    {
+        $notification->update([
+            'status' => 'failed',
+            'error'  => $e->getMessage(),
+        ]);
+
+        Log::error("Notification {$notification->id} failed: " . $e->getMessage());
     }
 }

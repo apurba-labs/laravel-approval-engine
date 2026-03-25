@@ -13,6 +13,7 @@ use ApurbaLabs\ApprovalEngine\Enums\WorkflowStatus;
 use ApurbaLabs\ApprovalEngine\Models\WorkflowBatch;
 use ApurbaLabs\ApprovalEngine\Models\WorkflowSetting;
 use ApurbaLabs\ApprovalEngine\Models\WorkflowNotification;
+use ApurbaLabs\ApprovalEngine\Models\WorkflowInstance;
 
 use ApurbaLabs\ApprovalEngine\Tests\Support\Models\User;
 use ApurbaLabs\ApprovalEngine\Tests\Support\Models\Role;
@@ -25,7 +26,7 @@ use ApurbaLabs\ApprovalEngine\Mail\BatchApprovalMail;
 
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
-
+use Illuminate\Support\Facades\Notification;
 
 class WorkflowCommandTest extends TestCase
 {
@@ -184,42 +185,62 @@ class WorkflowCommandTest extends TestCase
     /** @test 
      * @group v1
     */
-    public function workflow_command_creates_batch_and_sends_email()
-    {
-        $this->withoutExceptionHandling(); 
-        //Fake the Mailer
-        \Illuminate\Support\Facades\Log::spy();
 
-        // Set fixed time and prepare Data
-        $now = now()->next('Monday')->setHour(10);
-        $this->travelTo($now);
+    public function workflow_command_creates_batch_and_sends_notifications()
+    {
+        $this->withoutExceptionHandling();
+
+        Notification::fake(); // use Notification instead of Log
+
+        // Fixed time (Monday 10 AM)
+        $testTime = now()->next('Monday')->setHour(10);
+        $this->travelTo($testTime);
 
         $user = Role::where('name', 'HOSD')->first()?->users()->first() ?? User::factory()->withRole('HOSD')->create();
 
-        // Create an approved requisition within the daily window
-        Requisition::create([
-            'user_id' => $user->id,
-            'reference_id' => 'REQ-TEST-101',
-            'status' => 'approved',
-            'approved_at' => $testTime->copy()->subHour(),
-        ]);
-
-        // 3. The Chain: Instance -> Notification (Unsent)
-        $instance = WorkflowInstance::factory()->create(['module' => 'requisition', 'role' => 'HOSD']);
-
-        // Ensure the setting is Active and due to run
+        // Setting
         WorkflowSetting::factory()
             ->forModule('requisition')
             ->forRole('HOSD')
-            ->atFrequency('weekly', 1) 
+            ->atFrequency('weekly', 1)
             ->atSendTime('09:00:00')
             ->create();
 
+        // Instance
+        $instance = WorkflowInstance::factory()->create([
+            'module' => 'requisition',
+        ]);
+
+        // Notification (IMPORTANT)
+        WorkflowNotification::factory()->create([
+            'workflow_instance_id' => $instance->id,
+            'module' => 'requisition',
+            'role' => 'HOSD',
+            'status' => 'pending',
+            'recipient_id' => $user->id,
+            'recipient_type' => User::class,
+            'created_at' => now()->subMinutes(5),
+        ]);
+
+        // Act
         $this->artisan('approval:send-batch')->assertExitCode(0);
 
-        
-        Mail::assertSent(BatchApprovalMail::class);
-        
+        // Assert Notification Sent
+        Notification::assertSentTo(
+            $user,
+            \ApurbaLabs\ApprovalEngine\Notifications\WorkflowBatchNotification::class
+        );
+
+        // Assert Batch Created
+        $this->assertDatabaseHas('workflow_batches', [
+            'module' => 'requisition',
+            'role' => 'HOSD'
+        ]);
+
+        // Assert Notifications Updated
+        $this->assertDatabaseHas('workflow_notifications', [
+            'status' => 'sent'
+        ]);
     }
 
 }

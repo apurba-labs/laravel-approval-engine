@@ -31,7 +31,7 @@ class PurchaseModule extends BaseWorkflowModule
      */
     public function ownerRelations(): array
     {
-        return ['creator'];
+        return ['user'];
     }
 
     public function customRelations(): array
@@ -47,6 +47,14 @@ class PurchaseModule extends BaseWorkflowModule
     public function displayColumns(): array
     {
         return [];
+    }
+
+    public function relationModels(): array
+    {
+        return [
+            'user' => \ApurbaLabs\ApprovalEngine\Tests\Support\Models\User::class,
+            //'admin' => \App\Models\Admin::class,
+        ];
     }
 
 }
