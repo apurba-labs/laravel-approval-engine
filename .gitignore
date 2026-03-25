@@ -48,4 +48,5 @@ example/laravel-demo/.env
 /example/laravel-demo/bootstrap/cache
 /example/laravel-demo/.env
 composer.lock
+# ignore nextjs-dashboard is treated as a SUBMODULE (or separate repo)
 example/nextjs-dashboard/
