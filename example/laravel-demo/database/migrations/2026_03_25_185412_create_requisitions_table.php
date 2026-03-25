@@ -15,7 +15,8 @@ return new class extends Migration
         Schema::create('requisitions', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id')->index();
-            $table->string('reference_id');
+            $table->string('reference_id')->nullable();
+            $table->decimal('total_amount', 15, 2)->default(0.0);
             $table->string('type', 10)->default('new_inject');
             $table->mediumInteger('stage')->unsigned()->default(1);
             $table->string('stage_status', 15)->default(WorkflowStatus::PENDING->value);

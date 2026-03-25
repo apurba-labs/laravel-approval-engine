@@ -12,6 +12,7 @@ class Requisition extends Model
     protected $fillable = [
         'user_id',
         'reference_id',
+        'total_amount',
         'type',
         'stage',
         'stage_status',

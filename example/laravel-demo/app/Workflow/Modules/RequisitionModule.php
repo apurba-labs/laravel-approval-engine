@@ -23,13 +23,6 @@ class RequisitionModule extends BaseWorkflowModule
         return 'approved_at';
     }
 
-    public function relations(): array
-    {
-        return [
-            'user'
-        ];
-    }
-
     public function selectColumns(): array
     {
          return [
@@ -48,6 +41,31 @@ class RequisitionModule extends BaseWorkflowModule
         return [
             'reference_id' => 'Reference',
             'user.name' => 'Requested By',
+        ];
+    }
+
+    /**
+     * V1.2 FEATURE: Define the priority of owners.
+     * We want to check 'admin' first, then 'creator'.
+     */
+    public function ownerRelations(): array
+    {
+        return ['user'];
+    }
+
+    public function customRelations(): array
+    {
+        return []; 
+    }
+
+    /**
+     * V1.3 FEATURE: Define the priority of owners class.
+     */
+    public function relationModels(): array
+    {
+        return [
+            'user' => \App\Models\User::class,
+            //'admin' => \App\Models\Admin::class,
         ];
     }
 
