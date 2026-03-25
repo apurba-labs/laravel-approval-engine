@@ -2,18 +2,17 @@
 namespace ApurbaLabs\ApprovalEngine\Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use ApurbaLabs\ApprovalEngine\Tests\Support\Models\User; 
 use ApurbaLabs\ApprovalEngine\Models\{WorkflowStage, WorkflowSetting, WorkflowRule, WorkflowInstance};
 
 class WorkflowDatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        $userModel = config('auth.providers.users.model');
         // 1. Create Core Users & Roles
-        
-        $hosd = User::factory()->withRole('HOSD', 'Head of Sales Distribution')->create(['name' => 'hosd', 'email' => 'hosd@test.com']);
-        $coo  = User::factory()->withRole('COO', 'Chief operations officer')->create(['name' => 'coo', 'email' => 'coo@test.com']);
-        $md   = User::factory()->withRole('MD', 'Managing Director')->create(['name' => 'md', 'email' => 'md@test.com']);
+        $hosd = $userModel::factory()->withRole('HOSD', 'Head of Sales Distribution')->create(['name' => 'hosd', 'email' => 'hosd@test.com']);
+        $coo  = $userModel::factory()->withRole('COO', 'Chief operations officer')->create(['name' => 'coo', 'email' => 'coo@test.com']);
+        $md   = $userModel::factory()->withRole('MD', 'Managing Director')->create(['name' => 'md', 'email' => 'md@test.com']);
 
         // 2. Create requisition, Purchase Module Stages (HOSD -> COO -> MD)
         $stages = [

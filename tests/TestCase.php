@@ -121,6 +121,9 @@ abstract class TestCase extends BaseTestCase
         // Override the namespace to match your test modules
         $app['config']->set('approval-engine.modules_namespace', 'ApurbaLabs\\ApprovalEngine\\Tests\\Support\\Modules\\');
 
+        // Set the User model to my package's test model
+        $app['config']->set('auth.providers.users.model', \ApurbaLabs\ApprovalEngine\Tests\Support\Models\User::class);
+
         // Ensure web middleware is present
         $app['router']->aliasMiddleware('auth', \Illuminate\Auth\Middleware\Authenticate::class);
     }
