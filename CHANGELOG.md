@@ -33,3 +33,61 @@ All notable changes to this project will be documented in this file.
 💡 Designed for scalability, SaaS readiness, and enterprise workflows.
 
 --- 
+
+# 🚀 v1.3 – Workflow Instance + Rule Engine + Smart Batching
+
+This release introduces a major architectural upgrade, transforming the system into a production-ready workflow automation engine.
+
+## ✨ Key Features
+
+### 🧠 Workflow Instance Architecture
+- Introduced `WorkflowInstance` as the core lifecycle entity
+- Tracks workflow state, stage, and payload
+
+### ⚙️ Rule Engine
+- Dynamic role resolution using `workflow_rules`
+- Example:
+  - `total_amount > 5000 → COO`
+
+### 🔔 Notification System
+- Instant notifications (real-time)
+- Batch notifications (daily/weekly/monthly)
+
+### 📦 Smart Batching (Core Feature)
+- Groups approvals by role + time window
+- Prevents notification overload
+- Enterprise-ready batching strategy
+
+### 🔌 Module-Based Design
+- Fully extensible workflow modules
+- Polymorphic recipient resolution
+
+### 🧪 Testing
+- Full lifecycle coverage
+- Batch processing validation
+- Notification delivery tests
+
+---
+
+## 🏗️ Architecture
+
+WorkflowInstance → WorkflowLog → WorkflowNotification → BatchProcessor → NotificationService
+
+---
+
+## 🔥 What makes this unique?
+
+Unlike traditional approval systems, this engine supports:
+- Rule-driven workflows
+- Smart batching (rare in OSS)
+- Modular design
+- SaaS-ready architecture
+
+---
+
+## 🚀 Next (v1.4)
+
+- Workflow rules UI
+- Advanced recipient resolver
+- Filament plugin
+- SaaS multi-tenancy
