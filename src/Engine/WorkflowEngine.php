@@ -10,8 +10,10 @@ use ApurbaLabs\ApprovalEngine\Actions\MoveToNextStageAction;
 use ApurbaLabs\ApprovalEngine\Events\WorkflowStarted;
 
 use ApurbaLabs\ApprovalEngine\Models\WorkflowBatch;
+use ApurbaLabs\ApprovalEngine\Models\WorkflowInstance;
+use ApurbaLabs\ApprovalEngine\Models\WorkflowLog;
 
-use ApurbaLabs\ApprovalEngine\Support\StageResolver;
+use ApurbaLabs\ApprovalEngine\Support\StageNavigator;
 
 use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
@@ -20,44 +22,58 @@ use RuntimeException;
 
 class WorkflowEngine
 {
-    public function start($module, array $data): Collection
+   public function start($module, array $data): WorkflowInstance
     {
-        $stageResolver = app(StageResolver::class);
-        // Resolve module instance
-        $moduleInstance = is_string($module) ? $this->getModule($module) : $module;
+        $stageNavigator = app(StageNavigator::class);
 
-        $moduleName = $moduleInstance->name();
-        //dump("Batch validation failed for: " . $moduleName);
+        try {
+            $moduleInstance = is_string($module)
+                ? $this->getModule($module)
+                : $module;
+
+            $moduleName = $moduleInstance->name();
+
+        } catch (\Exception $e) {
+            throw new \RuntimeException("Invalid module provided Error: {$e}");
+        }
+
         try {
             $moduleInstance->validate($data);
 
-            $stageResolver = app(StageResolver::class);
-            $firstStage = $stageResolver->getFirstStage($moduleName);
+            $firstStage = $stageNavigator->getFirstStage($moduleName);
 
-            $workflow = new WorkflowBatch();
-            $workflow->module = $moduleName;
-            $workflow->role = $firstStage->role?? 'Admin';
-            $workflow->token = WorkflowBatch::generateToken();
-            $workflow->stage = $firstStage->stage_order;
-            $workflow->window_start = now();
-            $workflow->window_end = now();
-            $workflow->status = 'pending';
+            if (!$firstStage) {
+                throw new \RuntimeException("No stages configured for module {$moduleName}");
+            }
 
-            //$workflow->payload = $data;
+            // create instance
+            $workflow = WorkflowInstance::create([
+                'module' => $moduleName,
+                'current_stage_order' => $firstStage->stage_order,
+                'status' => 'pending',
+                'payload' => $data,
+                'started_at' => now(),
+            ]);
 
-            $workflow->save();
+            // create log
+            WorkflowLog::create([
+                'workflow_instance_id' => $workflow->id,
+                'module' => $moduleName,
+                'role' => $firstStage->role,
+                'stage_order' => $firstStage->stage_order,
+                'entered_at' => now(),
+            ]);
 
+            // fire event
             event(new WorkflowStarted($workflow));
 
-        
-            return collect([$workflow]);
+            return $workflow;
 
         } catch (\Exception $e) {
 
-            dump("Batch validation failed for: " . $e);
+            \Log::error("Workflow start failed for {$moduleName}: " . $e->getMessage());
 
-            \Log::warning("Batch validation failed for {$moduleName}: " . $e->getMessage());
-            return collect(); 
+            throw new \RuntimeException($e->getMessage());
         }
     }
     /**

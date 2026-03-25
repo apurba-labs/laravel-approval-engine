@@ -15,8 +15,10 @@ class MakeWorkflowModule extends Command
     public function handle()
     {
         $name = $this->argument('name');
+        $data = $name;
 
         $className = Str::studly($name).'Module';
+        $data = $className;
         
         File::ensureDirectoryExists(
             app_path('Workflow/Modules')
@@ -36,7 +38,7 @@ namespace App\Workflow\Modules;
 use ApurbaLabs\ApprovalEngine\Modules\BaseWorkflowModule;
 use Illuminate\Database\Eloquent\Builder;
 
-class {$className} extends BaseWorkflowModule
+class {$data} extends BaseWorkflowModule
 {
 
     public function model():string
@@ -95,6 +97,14 @@ class {$className} extends BaseWorkflowModule
         ];
     }
 
+    public function relationModels(): array
+    {
+        return [
+            'user' => \ApurbaLabs\ApprovalEngine\Tests\Support\Models\User::class,
+            //'admin' => \App\Models\Admin::class,
+        ];
+    }
+
     public function query(): Builder
     {
         return \$this->model()::query();
@@ -105,6 +115,6 @@ PHP;
 
         File::put($path,$stub);
 
-        $this->info("Workflow module created: {$className}");
+        $this->info("Workflow module created: {$data}");
     }
 }

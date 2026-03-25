@@ -13,12 +13,11 @@ return new class extends Migration
             $table->id();
             $table->string('module');
             $table->string('role')->comment('Role for which this batch applies');
-            $table->integer('stage');
             $table->string('token')->unique();
             $table->timestamp('window_start');
             $table->timestamp('window_end');
             $table->integer('item_count')->default(0);
-            $table->string('status')->default('pending');
+            $table->string('status')->default('pending')->comment('pending, sent, failed');
             $table->timestamp('sent_at')->nullable();
             $table->timestamp('completed_at')->nullable();
             $table->integer('reminder_count')->default(0);

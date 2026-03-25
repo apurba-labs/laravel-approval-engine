@@ -46,4 +46,16 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    // If using a simple string column:
+    public function hasWorkflowRole($role): bool
+    {
+        return $this->role === $role;
+    }
+
+    // If using a Role table:
+    public function role()
+    {
+        return $this->belongsTo(Role::class);
+    }
 }

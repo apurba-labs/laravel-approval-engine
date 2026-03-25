@@ -28,13 +28,12 @@ class BatchStatusCommand extends Command
 
             $rows[] = [
                 $batch->module,
-                $batch->stage,
                 $batch->status
             ];
         }
 
         $this->table(
-            ['Module','Stage','Status'],
+            ['Module','Status'],
             $rows
         );
     }

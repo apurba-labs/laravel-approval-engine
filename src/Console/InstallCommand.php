@@ -30,7 +30,7 @@ class InstallCommand extends Command
         if ($this->confirm('Do you want to seed the default workflow stages?', false)) {
             $this->info('Seeding database...');
             $this->call('db:seed', [
-                '--class' => WorkflowSeeder::class
+                '--class' => WorkflowDatabaseSeeder::class
             ]);
         }
 

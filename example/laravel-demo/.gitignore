@@ -24,8 +24,16 @@ Homestead.yaml
 .DS_Store
 Thumbs.db
 
+<<<<<<< HEAD
 # Laravel Specific (if they end up in your package)
 /public/build
 /public/hot
 /storage/*.key
 /storage/pail
+=======
+# Ignore local testing artifacts
+/example/laravel-demo/storage/*.key
+/example/laravel-demo/database/*.sqlite
+
+
+>>>>>>> dev

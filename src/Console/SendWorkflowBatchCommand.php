@@ -7,11 +7,13 @@ use Carbon\Carbon;
 
 use ApurbaLabs\ApprovalEngine\Engine\WorkflowEngine;
 
-use ApurbaLabs\ApprovalEngine\Support\StageResolver;
+use ApurbaLabs\ApprovalEngine\Support\StageNavigator;
 use ApurbaLabs\ApprovalEngine\Support\BatchProcessor;
 use ApurbaLabs\ApprovalEngine\Support\BatchWindowResolver;
 
 use ApurbaLabs\ApprovalEngine\Models\WorkflowSetting;
+use ApurbaLabs\ApprovalEngine\Models\WorkflowNotification;
+use ApurbaLabs\ApprovalEngine\Services\NotificationService;
 
 class SendWorkflowBatchCommand extends Command
 {
@@ -23,66 +25,104 @@ class SendWorkflowBatchCommand extends Command
     {
         $engine = app(WorkflowEngine::class);
         $processor = app(BatchProcessor::class);
-        $stageResolver = app(StageResolver::class);
         $windowResolver = app(BatchWindowResolver::class);
+        $notificationService = app(NotificationService::class);
 
-        $modules = $engine->discoverModules();
-        if (empty($modules)) {
-            $this->warn('No workflow modules discovered in ' . config('approval-engine.modules_path'));
+        // START FROM SETTINGS
+        $settingsList = WorkflowSetting::where('is_active', 1)->get();
+
+        if ($settingsList->isEmpty()) {
+            $this->warn('No active workflow settings found.');
             return Command::SUCCESS;
         }
 
-        foreach ($modules as $module) {
-            $moduleName = $module->name(); 
-            $this->info("Processing module: {$moduleName}");
+        foreach ($settingsList as $settings) {
 
-            $settingsList = WorkflowSetting::where('module', $moduleName)
-                ->where('is_active', true)
+            $moduleName = $settings->module;
+
+            $this->info("Processing module: {$moduleName} | role: {$settings->role}");
+
+            // validate module exists
+            try {
+                $module = $engine->getModule($moduleName);
+            } catch (\Exception $e) {
+                $this->error("Module not found: {$moduleName}");
+                continue;
+            }
+
+            // schedule check
+            if (!$this->shouldSendToday($settings)) {
+                $this->line("Skipping (schedule not matched)");
+                continue;
+            }
+
+            $window = $windowResolver->resolve($settings);
+            $start = $window['start'] ?? now()->subDay();
+            $end = $window['end'] ?? now();
+
+            // prevent duplicate batch
+            $existing = $processor->findExistingBatch(
+                $moduleName,
+                $settings->role,
+                $start,
+                $end
+            );
+
+            if ($existing) {
+                $this->line("Batch already exists, skipping...");
+                continue;
+            }
+
+            // 9fetch notifications
+            $notifications = WorkflowNotification::where('module', $moduleName)
+                ->where('role', $settings->role)
+                ->where('status', 'pending')
+                ->whereBetween('created_at', [$start, $end])
                 ->get();
 
-            foreach ($settingsList as $settings) {
-                $shouldSendToday = $this->shouldSendToday($settings);
-                
-                if (!$shouldSendToday) continue;
+            $this->line("Pending notifications: {$notifications->count()}");
 
-                $settings->update(['last_run_at' => now()]);
+            if ($notifications->isEmpty()) {
+                continue;
+            }
 
-                $this->info("Processing module: {$moduleName} for Role: {$settings->role}");
-
-                $window = $windowResolver->resolve($settings);
-                $start = $window['start'] ?? now()->subDay();
-                $end = $window['end'] ?? now();
-
-                DB::enableQueryLog();
-                $records = $engine->getApprovedRecords(
+            try {
+                // create batch
+                $batch = $processor->createBatch(
                     $moduleName,
+                    $settings->role,
                     $start,
                     $end
                 );
 
-                if ($records->isEmpty()) {
-                    $this->line(" - No records found for this window.");
-                    continue;
+                // send
+                $notificationService->sendBatch($batch, $notifications);
+
+                // mark notifications
+                WorkflowNotification::whereIn('id', $notifications->pluck('id'))
+                    ->update([
+                        'status' => 'sent',
+                        'sent_at' => now(),
+                    ]);
+
+                // update batch
+                $processor->markSent($batch, $notifications->count());
+
+                // update setting AFTER success
+                $settings->update(['last_run_at' => now()]);
+
+                $this->info("Batch sent ({$notifications->count()})");
+
+            } catch (\Exception $e) {
+                $this->error("Batch failed: " . $e->getMessage());
+
+                if (isset($batch)) {
+                    $processor->markFailed($batch, $e->getMessage());
                 }
-
-                $stage = $stageResolver->getStage($moduleName, $settings->role);
-
-                try {
-                    $batch = $processor->createBatch(
-                        $moduleName,
-                        $settings->role,
-                        $stage,
-                        $start,
-                        $end
-                    );
-                    $processor->markSent($batch, $records->count());
-
-                } catch (\Exception $e) {
-                    dump("BATCH CREATION FAILED: " . $e->getMessage());
-                }
-                $this->info("Batch created for module: {$moduleName}");
             }
         }
+
+        return Command::SUCCESS;
     }
 
     private function shouldSendToday($setting)
@@ -90,7 +130,7 @@ class SendWorkflowBatchCommand extends Command
         if ($this->option('force')) return true;
 
         $timezone = $setting->timezone ?? config('app.timezone', 'UTC');
-        $now = Carbon::now($timezone);
+        $now = now()->timezone($timezone);
 
         if ($setting->last_run_at) {
             $lastRun = Carbon::parse($setting->last_run_at)->timezone($timezone);

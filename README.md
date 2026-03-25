@@ -134,7 +134,7 @@ composer require apurba-labs/laravel-approval-engine
 ```bash
 php artisan vendor:publish --tag=approval-config
 php artisan migrate
-php artisan db:seed --class="ApurbaLabs\ApprovalEngine\Database\Seeders\WorkflowSeeder"
+php artisan db:seed --class="ApurbaLabs\ApprovalEngine\Database\Seeders\WorkflowDatabaseSeeder"
 php artisan db:seed --class="ApurbaLabs\ApprovalEngine\Database\Seeders\WorkflowSettingSeeder"
 
 ```
@@ -219,6 +219,13 @@ class RequisitionModule extends BaseWorkflowModule
         return [
             'reference_id' => 'Reference',
             'user.name' => 'Requested By',
+        ];
+    }
+    public function relationModels(): array
+    {
+        return [
+            'user' => \ApurbaLabs\ApprovalEngine\Tests\Support\Models\User::class,
+            //'admin' => \App\Models\Admin::class,
         ];
     }
 }

@@ -3,37 +3,32 @@
 namespace ApurbaLabs\ApprovalEngine\Listeners;
 
 use ApurbaLabs\ApprovalEngine\Events\BatchApproved;
-use Illuminate\Support\Facades\Mail;
-use ApurbaLabs\ApprovalEngine\Mail\BatchApprovalMail;
-use ApurbaLabs\ApprovalEngine\Engine\WorkflowEngine;
+use ApurbaLabs\ApprovalEngine\Services\NotificationService;
+use ApurbaLabs\ApprovalEngine\Models\WorkflowNotification;
 
 class HandleBatchApproved
 {
     public function handle(BatchApproved $event)
     {
         $batch = $event->batch;
-        $engine = app(WorkflowEngine::class);
 
-        $module = $engine->getModule($batch->module);
-        
-        if (!$module) {
-            \Log::error("Module not found for batch: " . $batch->module);
+        // Get notifications linked to this batch window
+        $notifications = WorkflowNotification::where('module', $batch->module)
+            ->where('role', $batch->role)
+            ->whereBetween('created_at', [
+                $batch->window_start,
+                $batch->window_end
+            ])
+            ->where('status', 'sent') // already processed
+            ->get();
+
+        if ($notifications->isEmpty()) {
+            \Log::info("No notifications found for batch {$batch->id}");
             return;
         }
 
-        // Fetching the actual data records that were just approved
-        $records = $engine->getApprovedRecords(
-            $module->name(), 
-            $batch->window_start, 
-            $batch->window_end
-        );
-        
-        $email = config('approval-engine.test_email', 'apurbansingh@yahoo.com');
-        
-        Mail::to($email)->send(new BatchApprovalMail(
-            $batch, 
-            $records, 
-            $module
-        ));
+        // Delegate to NotificationService
+        app(NotificationService::class)
+            ->sendBatch($batch, $notifications);
     }
 }
