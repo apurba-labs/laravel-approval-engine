@@ -48,3 +48,4 @@ example/laravel-demo/.env
 /example/laravel-demo/bootstrap/cache
 /example/laravel-demo/.env
 composer.lock
+example/nextjs-dashboard/
