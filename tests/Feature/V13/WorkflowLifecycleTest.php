@@ -158,7 +158,7 @@ class WorkflowLifecycleTest extends TestCase
         // --- ASSERT: Batch notification sent ---
         Notification::assertSentTo(
             $user,
-            \ApurbaLabs\ApprovalEngine\Notifications\WorkflowBatchNotification::class
+            WorkflowBatchNotification::class
         );
     }
 }

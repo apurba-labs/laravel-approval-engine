@@ -97,6 +97,14 @@ class {$data} extends BaseWorkflowModule
         ];
     }
 
+    public function relationModels(): array
+    {
+        return [
+            'user' => \ApurbaLabs\ApprovalEngine\Tests\Support\Models\User::class,
+            //'admin' => \App\Models\Admin::class,
+        ];
+    }
+
     public function query(): Builder
     {
         return \$this->model()::query();

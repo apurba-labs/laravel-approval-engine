@@ -221,6 +221,13 @@ class RequisitionModule extends BaseWorkflowModule
             'user.name' => 'Requested By',
         ];
     }
+    public function relationModels(): array
+    {
+        return [
+            'user' => \ApurbaLabs\ApprovalEngine\Tests\Support\Models\User::class,
+            //'admin' => \App\Models\Admin::class,
+        ];
+    }
 }
 
 
