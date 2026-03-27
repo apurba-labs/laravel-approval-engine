@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use ApurbaLabs\ApprovalEngine\Database\Seeders\WorkflowDatabaseSeeder;
+use ApurbaLabs\ApprovalEngine\Database\Seeders\DatabaseSeeder as WorkFlowDatabaseSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -17,7 +17,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            WorkflowDatabaseSeeder::class,
+            WorkFlowDatabaseSeeder::class,
         ]);
         
     }
