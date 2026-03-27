@@ -19,18 +19,33 @@ class UserFactory extends Factory
         ];
     }
     /**
+     * Fix: Combined forName and matching email logic.
+     * This ensures the email is always unique based on the name.
+     */
+    public function forName(?string $name = null, string $domain = 'test.com'): self
+    {
+        return $this->state(function () use ($name, $domain) {
+            // Generate a random name if none provided, or use the one passed
+            $finalName = $name ?? $this->faker->unique()->firstName() . '_' . $this->faker->randomNumber(2);
+            
+            return [
+                'name'  => $finalName,
+                'email' => strtolower($finalName) . '@' . $domain,
+            ];
+        });
+    }
+
+    /**
      * Assign a role to the user, creating it only if it doesn't exist.
      */
-    public function withRole(string $roleName, string $description = null)
+    public function withRole(string $roleName, ?string $description = null): self
     {
         return $this->state(function () use ($roleName, $description) {
-            // Find or create the Role object
             $role = Role::firstOrCreate(
                 ['name' => $roleName],
                 ['description' => $description ?? "System generated {$roleName} role"]
             );
 
-            // Return ONLY the column that exists in your users table
             return [
                 'role_id' => $role->id,
             ];
@@ -38,10 +53,10 @@ class UserFactory extends Factory
     }
 
     /**
-     * Set a dynamic module for the stage.
+     * Keep this for cases where you need a very specific email regardless of name.
      */
-    public function atEmail(string $email)
+    public function atEmail(string $email): self
     {
-        return $this->state(fn () => ['email' => $email]);
+        return $this->state(['email' => $email]);
     }
 }

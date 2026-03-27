@@ -3,30 +3,20 @@
 namespace Database\Factories;
 
 use App\Models\User;
+use App\Models\Role;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
-/**
- * @extends Factory<User>
- */
 class UserFactory extends Factory
 {
-    /**
-     * The current password being used by the factory.
-     */
     protected static ?string $password;
 
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
         return [
-            'name' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
+            'name' => $this->faker->name(),
+            'email' => $this->faker->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
@@ -34,12 +24,44 @@ class UserFactory extends Factory
     }
 
     /**
-     * Indicate that the model's email address should be unverified.
+     * Fix: Combined forName and matching email logic.
+     * This ensures the email is always unique based on the name.
      */
-    public function unverified(): static
+    public function forName(?string $name = null, string $domain = 'test.com'): self
     {
-        return $this->state(fn (array $attributes) => [
-            'email_verified_at' => null,
-        ]);
+        return $this->state(function () use ($name, $domain) {
+            // Generate a random name if none provided, or use the one passed
+            $finalName = $name ?? $this->faker->unique()->firstName() . '_' . $this->faker->randomNumber(2);
+            
+            return [
+                'name'  => $finalName,
+                'email' => strtolower($finalName) . '@' . $domain,
+            ];
+        });
+    }
+
+    /**
+     * Assign a role to the user, creating it only if it doesn't exist.
+     */
+    public function withRole(string $roleName, ?string $description = null): self
+    {
+        return $this->state(function () use ($roleName, $description) {
+            $role = Role::firstOrCreate(
+                ['name' => $roleName],
+                ['description' => $description ?? "System generated {$roleName} role"]
+            );
+
+            return [
+                'role_id' => $role->id,
+            ];
+        });
+    }
+
+    /**
+     * Keep this for cases where you need a very specific email regardless of name.
+     */
+    public function atEmail(string $email): self
+    {
+        return $this->state(['email' => $email]);
     }
 }
