@@ -1,5 +1,5 @@
 <?php
-namespace App\Http\Controllers\API\V1;
+namespace App\Http\Controllers\Api\V1;
 
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;

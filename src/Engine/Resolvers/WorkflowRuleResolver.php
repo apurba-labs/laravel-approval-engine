@@ -1,6 +1,8 @@
 <?php
+namespace ApurbaLabs\ApprovalEngine\Engine\Resolvers;
+
 use Illuminate\Support\Facades\Cache;
-use App\Models\WorkflowRule;
+use ApurbaLabs\ApprovalEngine\Models\WorkflowRule;
 use ApurbaLabs\ApprovalEngine\Support\StageNavigator;
 
 /**
@@ -25,11 +27,9 @@ class WorkflowRuleResolver
 
         foreach ($rules as $rule) {
 
-            $value = $payload[$rule->field] ?? null;
+            if (!array_key_exists($rule->field, $payload)) continue;
 
-            if ($value === null) continue;
-
-            if ($this->evaluate($value, $rule->operator, $rule->value)) {
+            if ($this->evaluateRule($payload, $rule)) {
 
                 return $this->stageNavigator
                     ->getStageByRole($module, $rule->role);
@@ -40,6 +40,15 @@ class WorkflowRuleResolver
             $module,
             $workflow->current_stage_order
         );
+    }
+
+    protected function evaluateRule($payload, $rule): bool
+    {
+        $value = $payload[$rule->field] ?? null;
+
+        if ($value === null) return false;
+
+        return $this->evaluate($value, $rule->operator, $rule->value);
     }
 
     private function evaluate($left, $op, $right): bool

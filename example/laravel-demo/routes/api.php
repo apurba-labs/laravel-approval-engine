@@ -3,12 +3,12 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-use App\Http\Controllers\API\V1\WorkflowConfigController;
-use App\Http\Controllers\API\V1\WorkflowController;
-use App\Http\Controllers\API\V1\RuleController;
-use App\Http\Controllers\API\V1\NotificationController;
-use App\Http\Controllers\API\V1\BatchController;
-use App\Http\Controllers\API\V1\MetricsController;
+use App\Http\Controllers\Api\V1\WorkflowConfigController;
+use App\Http\Controllers\Api\V1\WorkflowController;
+use App\Http\Controllers\Api\V1\RuleController;
+use App\Http\Controllers\Api\V1\NotificationController;
+use App\Http\Controllers\Api\V1\BatchController;
+use App\Http\Controllers\Api\V1\MetricsController;
 
 //Route::get('/user', function (Request $request) {
 //    return $request->user();

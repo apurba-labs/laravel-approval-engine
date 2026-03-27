@@ -10,11 +10,11 @@ class WorkflowDatabaseSeeder extends Seeder
     {
         $userModel = config('auth.providers.users.model');
         // 1. Create Core Users & Roles
-        $hosd = $userModel::factory()->withRole('HOSD', 'Head of Sales Distribution')->create(['name' => 'hosd', 'email' => 'hosd@test.com']);
-        $coo  = $userModel::factory()->withRole('COO', 'Chief operations officer')->create(['name' => 'coo', 'email' => 'coo@test.com']);
-        $md   = $userModel::factory()->withRole('MD', 'Managing Director')->create(['name' => 'md', 'email' => 'md@test.com']);
+        $hosd = $userModel::factory()->withRole('HOSD')->forName()->create();
+        $coo = $userModel::factory()->withRole('COO')->forName('chief_ops')->create();
+        $md = $userModel::factory()->withRole('MD')->forName(null, 'company.com')->create();
 
-        // 2. Create requisition, Purchase Module Stages (HOSD -> COO -> MD)
+        // Create requisition, Purchase Module Stages (HOSD -> COO -> MD)
         $stages = [
             ['module' => 'requisition', 'role' => 'HOSD', 'stage_order' => 1],
             ['module' => 'requisition', 'role' => 'COO', 'stage_order' => 2],
