@@ -9,8 +9,31 @@ use ApurbaLabs\ApprovalEngine\Models\WorkflowNotification;
 use ApurbaLabs\ApprovalEngine\Notifications\WorkflowBatchNotification;
 use ApurbaLabs\ApprovalEngine\Notifications\WorkflowSingleNotification;
 
+/**
+ * Legacy methods (v1.3)
+ * These will be refactored or removed in future versions.
+ * New flow uses: createNotification() + dispatch()
+ */
 class NotificationService
 {
+    public function createNotification($workflow, $role, $recipient): WorkflowNotification
+    {
+        return WorkflowNotification::create([
+            'workflow_instance_id' => $workflow->id,
+            'module' => $workflow->module,
+            'role' => $role,
+            'recipient_id' => $recipient?->id,
+            'recipient_type' => $recipient ? get_class($recipient) : null,
+            'status' => 'pending',
+        ]);
+    }
+
+    public function dispatch(WorkflowNotification $notification): void
+    {
+        app(WorkflowNotificationDispatcher::class)
+            ->dispatch($notification);
+    }
+
     /**
      * Send immediately if setting is 'instant'
      */
@@ -23,18 +46,6 @@ class NotificationService
         }
 
         $this->sendSingle($notification);
-    }
-
-    public function createNotification($workflow,  $role, $recipient)
-    {
-        return WorkflowNotification::create([ 
-            'workflow_instance_id' => $workflow->id, 
-            'module' => $workflow->module, 
-            'role' => $role, 
-            'recipient_id' => $recipient?->id, 
-            'recipient_type' => $recipient ? get_class($recipient) : null, 
-            'status' => 'pending', 
-        ]);
     }
 
     /**
