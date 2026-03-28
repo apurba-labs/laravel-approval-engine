@@ -24,6 +24,8 @@ class WorkflowNotification extends Model
         'sent_at' => 'datetime',
         'workflow_instance_id' => 'integer',
         'batch_id' => 'integer',
+        'next_retry_at' => 'datetime',
+        'escalate_at' => 'datetime',
     ];
 
     /**

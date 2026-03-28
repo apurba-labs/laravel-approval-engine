@@ -2,6 +2,9 @@
 namespace ApurbaLabs\ApprovalEngine\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+use ApurbaLabs\ApprovalEngine\Models\WorkflowInstance;
 
 class WorkflowApproval extends Model
 {
@@ -15,10 +18,21 @@ class WorkflowApproval extends Model
         'stage_order',
         'status',
         'approved_at',
-        'comments'
+        'comments',
+        'due_at',
+        'assigned_at',
+        'completed_at',
     ];
 
     protected $casts = [
-        'approved_at' => 'datetime'
+        'approved_at' => 'datetime',
+        'assigned_at'  => 'datetime',
+        'due_at'       => 'datetime',
+        'completed_at' => 'datetime',
     ];
+
+    public function workflowInstance(): BelongsTo
+    {
+        return $this->belongsTo(WorkflowInstance::class);
+    }
 }

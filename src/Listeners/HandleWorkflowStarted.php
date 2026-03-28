@@ -93,6 +93,8 @@ class HandleWorkflowStarted
                 'stage_id' => $stage?->id,
                 'stage_order' => $stage?->stage_order,
                 'status' => 'pending',
+                'assigned_at' => $now,
+                'due_at' => $now->copy()->addHours(1), // default SLA
             ]);
 
             // Create notification
