@@ -3,6 +3,7 @@
 namespace ApurbaLabs\ApprovalEngine\Console;
 
 use Illuminate\Console\Command;
+use ApurbaLabs\ApprovalEngine\Jobs\SendWorkflowNotificationJob;
 use ApurbaLabs\ApprovalEngine\Models\WorkflowNotification;
 use ApurbaLabs\ApprovalEngine\Services\WorkflowEscalationService;
 
@@ -32,17 +33,12 @@ class ProcessWorkflowNotifications extends Command
             ->whereNotNull('next_retry_at')
             ->where('next_retry_at', '<=', now())
             ->each(function ($notification) {
-                dispatch(new \ApurbaLabs\ApprovalEngine\Jobs\SendWorkflowNotificationJob($notification));
+                dispatch(new SendWorkflowNotificationJob($notification));
             });
 
         // Escalation
-        WorkflowNotification::where('is_sent', false)
-            ->whereNotNull('escalate_at')
-            ->where('escalate_at', '<=', now())
-            ->each(function ($notification) {
-                app(WorkflowEscalationService::class)
-                    ->escalate($notification);
-            });
+        app(WorkflowEscalationService::class)
+            ->processEscalations();
 
         $this->info('Processed workflow notifications.');
     }
