@@ -7,7 +7,7 @@ class FormSchemaService
 {
     public function getActiveForm(string $moduleSlug)
     {
-        return WorkflowForm::whereHas('module', function ($q) use ($moduleSlug) {
+        return WorkflowForm::whereHas('workflowModule', function ($q) use ($moduleSlug) {
                 $q->where('slug', $moduleSlug);
             })
             ->where('is_active', true)

@@ -50,6 +50,7 @@ class WorkflowEngine
             $workflow = WorkflowInstance::create([
                 'module' => $moduleName,
                 'current_stage_order' => $firstStage->stage_order,
+                'role' => $firstStage->role,
                 'status' => 'pending',
                 'payload' => $data,
                 'started_at' => now(),
@@ -65,7 +66,7 @@ class WorkflowEngine
             ]);
 
             // fire event
-            event(new WorkflowStarted($workflow));
+            event(new WorkflowStarted(collect([$workflow])));
 
             return $workflow;
 

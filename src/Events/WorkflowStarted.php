@@ -23,6 +23,8 @@ class WorkflowStarted
 
     public function workflows(): Collection
     {
-        return $this->workflows;
+        return collect($this->workflows)->map(function ($workflow) {
+            return is_object($workflow) ? $workflow : \ApurbaLabs\ApprovalEngine\Models\WorkflowInstance::find($workflow);
+        });
     }
 }

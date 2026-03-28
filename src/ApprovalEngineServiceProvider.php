@@ -40,11 +40,7 @@ class ApprovalEngineServiceProvider extends ServiceProvider
         //    __DIR__.'/../database/seeders' => database_path('seeders')
         //], 'approval-seeders');
 
-        Route::prefix('approval')->group(function () {
-            $this->loadRoutesFrom(__DIR__.'/../routes/approval.php');
-        });
-
-
+        $this->loadRoutesFrom(__DIR__.'/../routes/approval.php');
     }
 
     public function register()

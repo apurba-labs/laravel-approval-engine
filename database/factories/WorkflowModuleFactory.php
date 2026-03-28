@@ -15,8 +15,8 @@ class WorkflowModuleFactory extends Factory
     {
         $name = $this->faker->words(2, true);
         return [
-            'name' => Str::title($name),
-            'slug' => Str::slug($name),
+            'name' => $this->faker->words(3, true),
+            'slug' => $this->faker->unique()->slug(),
         ];
     }
     

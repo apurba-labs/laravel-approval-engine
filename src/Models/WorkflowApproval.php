@@ -8,9 +8,11 @@ class WorkflowApproval extends Model
     protected $table = 'workflow_approvals';
 
     protected $fillable = [
+        'workflow_instance_id',
         'batch_id',
         'user_id',
-        'stage',
+        'stage_id',
+        'stage_order',
         'status',
         'approved_at',
         'comments'
