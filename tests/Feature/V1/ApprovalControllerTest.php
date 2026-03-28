@@ -34,7 +34,7 @@ class ApprovalControllerTest extends TestCase
         
         
         $response = $this->actingAs($user)
-            ->get("/approval/batch/{$batch->token}");
+            ->get("/api/v1/batch/{$batch->token}");
 
         $response->assertStatus(200)
             ->assertJson(['message' => 'Batch approved successfully']);

@@ -28,7 +28,13 @@ return new class extends Migration
      */
     public function down(): void
     {
-       Schema::table('workflow_settings', function (Blueprint $table) {
+       // Update any 'instant' records to 'daily' so the column change doesn't crash
+        DB::table('workflow_settings')
+            ->where('frequency', 'instant')
+            ->update(['frequency' => 'daily']);
+
+        // Now safely remove 'instant' from the enum definition
+        Schema::table('workflow_settings', function (Blueprint $table) {
             $table->enum('frequency', ['daily', 'weekly', 'monthly'])
                   ->comment('daily, weekly, monthly')
                   ->change();

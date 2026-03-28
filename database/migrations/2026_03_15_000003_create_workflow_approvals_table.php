@@ -14,7 +14,7 @@ return new class extends Migration
 
             $table->foreignId('batch_id')->constrained('workflow_batches');
 
-            $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('user_id')->nullable();
 
             $table->integer('stage');
 

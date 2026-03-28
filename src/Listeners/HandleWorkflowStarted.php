@@ -3,68 +3,113 @@
 namespace ApurbaLabs\ApprovalEngine\Listeners;
 
 use ApurbaLabs\ApprovalEngine\Events\WorkflowStarted;
-use Illuminate\Support\Facades\Mail;
-use ApurbaLabs\ApprovalEngine\Engine\WorkflowEngine;
+use ApurbaLabs\ApprovalEngine\Engine\Resolvers\WorkflowRuleResolver;
+use ApurbaLabs\ApprovalEngine\Engine\Resolvers\WorkflowRecipientResolver;
 use ApurbaLabs\ApprovalEngine\Services\NotificationService;
-use ApurbaLabs\ApprovalEngine\Support\StageNavigator;
-
-use ApurbaLabs\ApprovalEngine\Models\WorkflowNotification;
-
+use ApurbaLabs\ApprovalEngine\Models\WorkflowApproval;
+use ApurbaLabs\ApprovalEngine\Models\WorkflowRule;
 use Illuminate\Support\Facades\Log;
-
-use ApurbaLabs\ApprovalEngine\Models\WorkflowStage;
 
 class HandleWorkflowStarted
 {
-    /**
-     * Handle the event.
-     * We only handle non-batch (single) starts here
-     *
-     * @param WorkflowStarted $event
-     * @return void
-     */
     public function handle(WorkflowStarted $event)
     {
-
-        $stageNavigator = app(StageNavigator::class);
-        $engine = app(WorkflowEngine::class);
+        $ruleResolver = app(WorkflowRuleResolver::class);
+        $recipientResolver = app(WorkflowRecipientResolver::class);
         $notificationService = app(NotificationService::class);
 
         foreach ($event->workflows() as $workflow) {
 
-            if (!isset($workflow->id)) {
+            // Ensure fresh + valid model
+            $workflow = $workflow?->fresh();
+
+            if (!$workflow || !$workflow->id) {
                 Log::error("Invalid workflow structure", ['workflow' => $workflow]);
                 continue;
             }
 
-            
-            $stage = $stageNavigator->getCurrentStage(
-                $workflow->module,
-                $workflow->current_stage_order
-            );
+            // Resolve stage
+            $stage = $ruleResolver->resolveNextStage($workflow);
 
             if (!$stage) {
-                Log::error("Stage not found for module {$workflow->module}");
+                Log::error("No stage resolved", ['workflow_id' => $workflow->id]);
                 continue;
             }
 
-            $module = $engine->getModule($workflow->module);
+            // Find matching rule
+            $rule = WorkflowRule::where('module', $workflow->module)
+                ->where('is_active', true)
+                ->orderBy('priority')
+                ->get()
+                ->first(function ($rule) use ($workflow) {
 
-            $recipient = $module->resolveRecipient($workflow, $stage->role);
-            
-            $notification = WorkflowNotification::create([
+                    $payload = $workflow->payload ?? [];
+
+                    if (!array_key_exists($rule->field, $payload)) return false;
+
+                    $value = $payload[$rule->field];
+
+                    return match ($rule->operator) {
+                        '>'  => $value > $rule->value,
+                        '<'  => $value < $rule->value,
+                        '='  => $value == $rule->value,
+                        '>=' => $value >= $rule->value,
+                        '<=' => $value <= $rule->value,
+                        '!=' => $value != $rule->value,
+                        default => false,
+                    };
+                });
+
+            if (!$rule) {
+                Log::warning("No matching rule found", ['workflow_id' => $workflow->id]);
+                continue;
+            }
+
+            // Resolve recipient
+            $recipient = $recipientResolver->resolve($rule);
+
+            if (!$recipient) {
+                Log::error("Recipient not found", [
+                    'workflow_id' => $workflow->id,
+                    'role' => $rule->role
+                ]);
+                continue;
+            }
+
+            // Prevent duplicate approvals
+            $exists = WorkflowApproval::where('workflow_instance_id', $workflow->id)
+                ->where('stage_order', $stage?->stage_order)
+                ->exists();
+
+            if ($exists) {
+                Log::warning("Approval already exists", ['workflow_id' => $workflow->id]);
+                continue;
+            }
+
+            // Create approval
+            $approval = WorkflowApproval::create([
                 'workflow_instance_id' => $workflow->id,
-                'module' => $workflow->module,
-                'role' => $stage->role,
-                'recipient_id' => $recipient?->id,
-                'recipient_type' => $recipient ? get_class($recipient) : null,
+                'user_id' => $recipient->id,
+                'stage_id' => $stage?->id,
+                'stage_order' => $stage?->stage_order,
                 'status' => 'pending',
             ]);
 
-            // optional: instant send
+            // Create notification
+            $notification = $notificationService->createNotification(
+                $workflow,
+                $rule->role,
+                $recipient
+            );
+
+            // Send if instant
             $notificationService->sendImmediateIfNeeded($notification);
-            
-            Log::info("New Workflow Started: {$workflow->module}");
+
+            Log::info("Workflow assigned", [
+                'workflow_id' => $workflow->id,
+                'user_id' => $recipient->id,
+                'role' => $rule->role
+            ]);
         }
     }
 }

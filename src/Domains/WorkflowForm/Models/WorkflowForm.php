@@ -31,6 +31,11 @@ class WorkflowForm extends Model
         return $this->belongsTo(WorkflowModule::class, 'module_id');
     }
 
+    public function getModuleAttribute()
+    {
+        return $this->workflowModule;
+    }
+
     protected static function newFactory(): Factory
     {
         return WorkflowFormFactory::new();

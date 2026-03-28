@@ -17,12 +17,24 @@ class NotificationService
     public function sendImmediateIfNeeded(WorkflowNotification $notification): void
     {
         $setting = $this->getSetting($notification);
-        
+
         if (!$setting || $setting->frequency !== 'instant') {
             return;
         }
 
         $this->sendSingle($notification);
+    }
+
+    public function createNotification($workflow,  $role, $recipient)
+    {
+        return WorkflowNotification::create([ 
+            'workflow_instance_id' => $workflow->id, 
+            'module' => $workflow->module, 
+            'role' => $role, 
+            'recipient_id' => $recipient?->id, 
+            'recipient_type' => $recipient ? get_class($recipient) : null, 
+            'status' => 'pending', 
+        ]);
     }
 
     /**
