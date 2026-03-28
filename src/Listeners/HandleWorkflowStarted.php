@@ -103,7 +103,7 @@ class HandleWorkflowStarted
             );
 
             // Send if instant
-            $notificationService->sendImmediateIfNeeded($notification);
+            $notificationService->dispatch($notification);
 
             Log::info("Workflow assigned", [
                 'workflow_id' => $workflow->id,
