@@ -14,6 +14,8 @@ use ApurbaLabs\ApprovalEngine\Console\MakeWorkflowModule;
 use ApurbaLabs\ApprovalEngine\Console\WorkflowVisualizerCommand;
 use ApurbaLabs\ApprovalEngine\Console\BatchStatusCommand;
 use ApurbaLabs\ApprovalEngine\Console\SetupApprovalDemo;
+use ApurbaLabs\ApprovalEngine\Console\ProcessWorkflowNotifications;
+
 class ApprovalEngineServiceProvider extends ServiceProvider
 {
 
@@ -55,6 +57,7 @@ class ApprovalEngineServiceProvider extends ServiceProvider
             WorkflowVisualizerCommand::class,
             BatchStatusCommand::class,
             SetupApprovalDemo::class,
+            ProcessWorkflowNotifications::class,
         ]);
     }
 
