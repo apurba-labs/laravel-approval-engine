@@ -8,6 +8,7 @@ use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\SerializesModels;
 
 use ApurbaLabs\ApprovalEngine\Models\WorkflowNotification;
+use ApurbaLabs\ApprovalEngine\Services\WorkflowRetryService;
 
 class SendWorkflowNotificationJob implements ShouldQueue
 {
@@ -38,10 +39,8 @@ class SendWorkflowNotificationJob implements ShouldQueue
 
         } catch (\Exception $e) {
 
-            $this->notification->update([
-                'status' => 'failed',
-                'error' => $e->getMessage(),
-            ]);
+            app(WorkflowRetryService::class)
+                ->scheduleRetry($this->notification);
 
             throw $e; // important for retry later
         }
