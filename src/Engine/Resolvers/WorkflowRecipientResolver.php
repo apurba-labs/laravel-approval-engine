@@ -10,9 +10,11 @@ class WorkflowRecipientResolver
         return $this->resolveByRole($rule->role);
     }
 
-    protected function resolveByRole(string $role)
+    protected function resolveByRole(string $roleName)
     {
         $userModel = config('auth.providers.users.model');
-        return $userModel::where('role', $role)->first();
+        return $userModel::whereHas('role', function ($query) use ($roleName) {
+            $query->where('name', $roleName);
+        })->first();
     }
 }
