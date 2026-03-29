@@ -15,25 +15,12 @@ class WorkflowRuleResolver
     public function resolveNextStage($workflow)
     {
         $module = $workflow->module;
-        $payload = $workflow->payload ?? [];
 
-        $rules = Cache::rememberForever(
-            "workflow_rules:{$module}",
-            fn() => WorkflowRule::where('module', $module)
-                ->where('is_active', true)
-                ->orderBy('priority')
-                ->get()
-        );
+        $rule = $this->findMatchingRule($workflow);
 
-        foreach ($rules as $rule) {
-
-            if (!array_key_exists($rule->field, $payload)) continue;
-
-            if ($this->evaluateRule($payload, $rule)) {
-
-                return $this->stageNavigator
-                    ->getStageByRole($module, $rule->role);
-            }
+        if ($rule) {
+            return $this->stageNavigator
+                ->getStageByRole($module, $rule->role);
         }
 
         return $this->stageNavigator->getNextStage(
@@ -68,5 +55,32 @@ class WorkflowRuleResolver
             '!=' => $left != $right,
             default => false,
         };
+    }
+
+    public function findMatchingRule($workflow): ?WorkflowRule
+    {
+        $module = $workflow->module;
+        $payload = $workflow->payload ?? [];
+
+        $rules = Cache::rememberForever(
+            "workflow_rules:{$module}",
+            fn() => WorkflowRule::where('module', $module)
+                ->where('is_active', true)
+                ->orderBy('priority')
+                ->get()
+        );
+
+        foreach ($rules as $rule) {
+
+            if (!array_key_exists($rule->field, $payload)) {
+                continue;
+            }
+
+            if ($this->evaluateRule($payload, $rule)) {
+                return $rule;
+            }
+        }
+
+        return null;
     }
 }

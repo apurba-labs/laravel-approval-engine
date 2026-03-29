@@ -11,7 +11,17 @@ class WorkflowRule extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['module', 'field', 'operator', 'value', 'role', 'priority', 'is_active'];
+    protected $fillable = [
+        'module', 
+        'field', 
+        'operator', 
+        'value', 
+        'role', 
+        'assign_type',
+        'assign_value',
+        'priority', 
+        'is_active'
+    ];
 
     /**
      * Create a new factory instance for the model.
