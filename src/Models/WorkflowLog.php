@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\Factory; 
 use ApurbaLabs\ApprovalEngine\Database\Factories\WorkflowLogFactory;
 
+use ApurbaLabs\ApprovalEngine\Models\WorkflowInstance;
+
 class WorkflowLog extends Model
 {
     use HasFactory;
@@ -23,6 +25,11 @@ class WorkflowLog extends Model
     public function instance(): BelongsTo
     {
         return $this->belongsTo(WorkflowInstance::class, 'workflow_instance_id');
+    }
+
+    public function workflowInstance(): BelongsTo
+    {
+        return $this->belongsTo(WorkflowInstance::class);
     }
 
     // Relationship removed to support dynamic Module Owners (creator/admin/user)

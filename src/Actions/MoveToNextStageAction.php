@@ -4,9 +4,9 @@ namespace ApurbaLabs\ApprovalEngine\Actions;
 
 use ApurbaLabs\ApprovalEngine\Models\WorkflowSetting;
 use ApurbaLabs\ApprovalEngine\Models\WorkflowBatch;
+use ApurbaLabs\ApprovalEngine\Models\WorkflowLog;
 use ApurbaLabs\ApprovalEngine\Support\StageNavigator;
 use ApurbaLabs\ApprovalEngine\Support\BatchWindowResolver;
-use Illuminate\Support\Str;
 
 class MoveToNextStageAction
 {
@@ -20,28 +20,25 @@ class MoveToNextStageAction
             $batch->stage
         );
 
-        if($nextStage){
-            //Try to find the specific setting for the next role
+        if ($nextStage) {
+
             $setting = WorkflowSetting::where('module', $batch->module)
                 ->where('role', $nextStage->role)
                 ->where('is_active', true)
                 ->first();
 
-            //Fallback: If no setting exists, create a default 24h window
+            // Clean window logic
             if ($setting) {
                 $window = $windowResolver->resolve($setting);
                 $start = $window['start'];
                 $end = $window['end'];
             } else {
                 $start = now();
-                $end = now()->addDay();
+                $end = now()->addHours(24);
             }
 
-            $window = $windowResolver->resolve($setting);
-            $start = $window['start'] ?? now();
-            $end = $window['end'] ?? now()->addHours(24);
-
-            return WorkflowBatch::create([
+            // Create next batch
+            $newBatch = WorkflowBatch::create([
                 'module'       => $batch->module,
                 'role'         => $nextStage->role,
                 'token'        => WorkflowBatch::generateToken(),
@@ -49,9 +46,28 @@ class MoveToNextStageAction
                 'window_start' => $start,
                 'window_end'   => $end
             ]);
+
+            // Aadding LOG HERE
+            WorkflowLog::create([
+                'workflow_instance_id' => $batch->workflow_instance_id,
+                'module' => $batch->module,
+                'role' => $nextStage->role,
+                'stage_order' => $nextStage->stage_order,
+                'entered_at' => now(),
+            ]);
+
+            return $newBatch;
         }
 
-        // No more stages? Complete the workflow.
+        // log completion
+        WorkflowLog::create([
+            'workflow_instance_id' => $batch->workflow_instance_id,
+            'module' => $batch->module,
+            'role' => 'completed',
+            'stage_order' => $batch->stage,
+            'entered_at' => now(),
+        ]);
+
         return app(CompleteWorkflowAction::class)->execute($batch);
     }
 }
