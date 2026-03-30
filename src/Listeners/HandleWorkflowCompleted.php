@@ -3,46 +3,24 @@
 namespace ApurbaLabs\ApprovalEngine\Listeners;
 
 use ApurbaLabs\ApprovalEngine\Events\WorkflowCompleted;
-use Illuminate\Support\Facades\Mail;
-//use ApurbaLabs\ApprovalEngine\Mail\WorkflowFinalizedMail;
-use App\Models\User;
+use ApurbaLabs\ApprovalEngine\Models\WorkflowLog;
+use Illuminate\Support\Facades\Log;
 
 class HandleWorkflowCompleted
 {
     public function handle(WorkflowCompleted $event)
     {
         $batch = $event->batch;
-        $engine = app(\ApurbaLabs\ApprovalEngine\Engine\WorkflowEngine::class);
-        $module = $engine->getModule($batch->module);
 
-        $records = $engine->getApprovedRecords(
-            $module->name(), 
-            $batch->window_start, 
-            $batch->window_end
-        );
+        // TIMELINE LOG ONLY
+        WorkflowLog::create([
+            'workflow_instance_id' => $batch->workflow_instance_id,
+            'module' => $batch->module,
+            'role' => 'completed',
+            'stage_order' => $batch->stage,
+            'entered_at' => now(),
+        ]);
 
-        $notificationQueue = [];
-
-        $groupedByOwner = $records->groupBy($ownerColumn);
-
-        foreach ($records as $record) {
-            $owner = $module->resolveOwner($record);
-
-            if ($owner && !empty($owner->email)) {
-                $notificationQueue[$owner->email]['owner'] = $owner;
-                $notificationQueue[$owner->email]['records'][] = $record;
-            }
-        }
-
-        // foreach ($notificationQueue as $email => $data) {
-        //     Mail::to($email)->send(new WorkflowFinalizedMail(
-        //         $batch, 
-        //         $module, 
-        //         collect($data['records']), 
-        //         $data['owner']
-        //     ));
-        // }
-
-        Log::info("Workflow COMPLETELY Finished: Batch #{$batch->id} for {$module->name()}");
+        Log::info("Workflow COMPLETED: Batch #{$batch->id}");
     }
 }

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Factories\Factory; 
 use ApurbaLabs\ApprovalEngine\Models\WorkflowNotification;
+use ApurbaLabs\ApprovalEngine\Models\WorkflowLog;
 use ApurbaLabs\ApprovalEngine\Database\Factories\WorkflowInstanceFactory;
 class WorkflowInstance extends Model
 {
@@ -30,6 +31,17 @@ class WorkflowInstance extends Model
     public function notifications(): HasMany
     {
         return $this->hasMany(WorkflowNotification::class, 'workflow_instance_id');
+    }
+
+    public function approvals()
+    {
+        return $this->hasMany(\ApurbaLabs\ApprovalEngine\Models\WorkflowApproval::class);
+    }
+
+    public function logs(): HasMany
+    {
+        return $this->hasMany(WorkflowLog::class)
+            ->orderBy('entered_at');
     }
 
     /**
