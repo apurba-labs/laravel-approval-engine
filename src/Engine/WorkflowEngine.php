@@ -8,6 +8,7 @@ use ApurbaLabs\ApprovalEngine\Actions\ApproveBatchAction;
 use ApurbaLabs\ApprovalEngine\Actions\FetchApprovedRecordsAction;
 use ApurbaLabs\ApprovalEngine\Actions\MoveToNextStageAction;
 use ApurbaLabs\ApprovalEngine\Events\WorkflowStarted;
+use ApurbaLabs\ApprovalEngine\Events\WorkflowRejected;
 
 use ApurbaLabs\ApprovalEngine\Models\WorkflowBatch;
 use ApurbaLabs\ApprovalEngine\Models\WorkflowInstance;
@@ -77,6 +78,19 @@ class WorkflowEngine
             throw new \RuntimeException($e->getMessage());
         }
     }
+
+    public function reject(WorkflowInstance $workflow, ?string $reason = null): WorkflowInstance
+    {
+        $workflow->update([
+            'status' => 'rejected',
+            'completed_at' => now(),
+        ]);
+
+        event(new \ApurbaLabs\ApprovalEngine\Events\WorkflowRejected($workflow, $reason));
+
+        return $workflow;
+    }
+
     /**
      * Resolve the module class from config and ensure it implements the interface.
      */

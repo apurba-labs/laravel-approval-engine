@@ -7,14 +7,23 @@ class WorkflowRecipientResolver
 {
     public function resolve(WorkflowRule $rule)
     {
-        return $this->resolveByRole($rule->role);
+        return match ($rule->assign_type) {
+            'role' => $this->resolveByRole($rule->assign_value ?? $rule->role),
+            'user' => $this->resolveByUserId($rule->assign_value),
+            default => null,
+        };
     }
 
-    protected function resolveByRole(string $roleName)
+    protected function resolveByRole(string $role)
     {
         $userModel = config('auth.providers.users.model');
-        return $userModel::whereHas('role', function ($query) use ($roleName) {
-            $query->where('name', $roleName);
-        })->first();
+        return $userModel::where('role', $role)->first();
+    }
+
+    protected function resolveByUserId($id)
+    {
+        $userModel = config('auth.providers.users.model');
+
+        return $userModel::find($id);
     }
 }

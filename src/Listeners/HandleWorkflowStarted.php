@@ -37,28 +37,7 @@ class HandleWorkflowStarted
             }
 
             // Find matching rule
-            $rule = WorkflowRule::where('module', $workflow->module)
-                ->where('is_active', true)
-                ->orderBy('priority')
-                ->get()
-                ->first(function ($rule) use ($workflow) {
-
-                    $payload = $workflow->payload ?? [];
-
-                    if (!array_key_exists($rule->field, $payload)) return false;
-
-                    $value = $payload[$rule->field];
-
-                    return match ($rule->operator) {
-                        '>'  => $value > $rule->value,
-                        '<'  => $value < $rule->value,
-                        '='  => $value == $rule->value,
-                        '>=' => $value >= $rule->value,
-                        '<=' => $value <= $rule->value,
-                        '!=' => $value != $rule->value,
-                        default => false,
-                    };
-                });
+            $rule = $ruleResolver->findMatchingRule($workflow);
 
             if (!$rule) {
                 Log::warning("No matching rule found", ['workflow_id' => $workflow->id]);
@@ -93,6 +72,8 @@ class HandleWorkflowStarted
                 'stage_id' => $stage?->id,
                 'stage_order' => $stage?->stage_order,
                 'status' => 'pending',
+                'assigned_at' => $now,
+                'due_at' => $now->copy()->addHours(1), // default SLA
             ]);
 
             // Create notification
@@ -103,7 +84,7 @@ class HandleWorkflowStarted
             );
 
             // Send if instant
-            $notificationService->sendImmediateIfNeeded($notification);
+            $notificationService->dispatch($notification);
 
             Log::info("Workflow assigned", [
                 'workflow_id' => $workflow->id,
