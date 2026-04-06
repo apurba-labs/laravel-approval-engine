@@ -5,94 +5,91 @@
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/apurba-labs/laravel-approval-engine?style=social)](https://github.com/apurba-labs/laravel-approval-engine/stargazers)
 
+### Stop Email Spam. Start Smart Approvals.
 A modular, batch-based, multi-stage approval workflow engine for Laravel.
-Designed for **real-world enterprise workflows** -- Supports batch approvals, email-based approval links, and configurable workflow stages.
+Designed for **real-world enterprise workflows** -- it handles **high-volume  enterprise requests** into actionable notification batches with email-based approvals and fully configurable stages..
 
----
-## 🔥 Why This Package Exists
-In most Laravel projects:
-- Approval workflows are rebuilt again and again
-- Logic gets tightly coupled with business models
-- Email spam happens (1 record = 1 email 😓)
+## Demo (Real Workflow)
 
-👉 This package solves that with a clean, scalable architecture
+👉 Create Request → Batch → Approval → Timeline → Done
 
----
+🚧 Demo GIF coming soon (actively working on UI)
 
-## Key Features
+Meanwhile, you can test locally:
 
-- **Multi-stage** approval workflows
-- **Batch processing** (20 approvals → 1 email)
-- **Email-based** approval links
-- **Modular** workflow system (plug & play)
-- **Event-driven** architecture
-- **No hard dependency** on roles system
-- **Clean architecture** (Engine + Actions + Support)
+```bash
+php artisan approval:demo
 
----
-
-## 🧠 Example Workflows
-
-- Requisition → HOS → COO → Completed
-- Invoice → Manager → Finance → CFO
-- Purchase → Supervisor → Director
-
----
-
-## 🏗 How It Works
-
-```mermaid
-graph TD
-    A[Approved Records] --> B[Batch Created]
-    B --> C[Email Sent]
-    C --> D[User Clicks Approval Link]
-    D --> E[Next Stage Triggered]
-    E --> F[Workflow Completed]
-
-    style A fill:#f9f9f9,stroke:#333
-    style F fill:#d4edda,stroke:#28a745,stroke-width:2px
 ```
 ---
-## 📊 Workflow Flow
+## 🏗️ Active Development (UI Layer)
+We are currently building the frontend components to provide a full "Plug & Play" experience. 
+
+| Component | Status | Description |
+| :--- | :--- | :--- |
+| 🧾 **Workflow List** | 👷 In Progress | A management dashboard for all active batches. |
+| 🧠 **Approval Timeline** | 🎨 Designing | A visual history of who approved/rejected and when. |
+| 🔐 **IAM Dashboard** | ⚙️ Backend Ready | Powered by `laravel-iam` for scoped RBAC management. |
+
+👉 **Note:** Screenshots and a full Demo GIF will be added in upcoming releases as the UI components are finalized.
+---
+
+## Why This Package? Solving "Approval Fatigue"
+In most enterprise systems:
+- **Email Spam:** 100 purchase requests = 100 separate emails to the Manager. 😓
+- **Hardcoded Logic:** Approval steps are buried inside Controllers or Models.
+- **No Escalation:** No built-in way to remind pending approvers or escalate.
+
+**Laravel Approval Engine** solves this by separating the **Workflow Logic** from your **Business Models** and grouping requests into smart batches.
+
+---
+
+### Key Features
+
+- **📦 Smart Batching:** Group 50 records into **1 single email/notification**.
+- **⛓️ Multi-Stage Workflows:** Define paths like `Requisition -> HOS -> COO -> Finance`.
+- **🔗 Token-Based Links:** Approve or Reject directly from an email without logging in.
+- **🧩 Zero-Coupling:** Works with any Eloquent model without altering your schema.
+- **⏳ Escalation Engine:** (v2.0) Automatic reminders and "Escalate to Higher Role" logic.
+- **🚀 IAM Ready:** Integrates with [Laravel IAM](https://github.com/apurba-labs/laravel-iam) for scoped authority.
+
+---
+
+## Example Use Cases
+
+- 🧾 Requisition Approval (HOS → COO)  
+- 💰 Invoice Approval (Manager → Finance → CFO)  
+- 🛒 Purchase Workflow  
+- 🧑‍💼 Leave Approval System  
+
+---
+
+## How It Works
 
 ```mermaid
 graph TD
-    A[Approved Records] --> B[Batch Created]
+    A[Create Request] --> B[Batch Created]
     B --> C[Email Sent]
-    C --> D[User Clicks Approval Link]
-    D --> E[Stage Resolver]
-    E --> F{Next Stage?}
-    F -- Yes --> G[Create Next Batch]
-    G --> H[Send Next Approval]
-    F -- No --> I[Workflow Completed]
-    
-    style F fill:#f9f,stroke:#333,stroke-width:2px
-    style I fill:#dfd,stroke:#333,stroke-width:2px
-
+    C --> D[User Clicks Link]
+    D --> E[Approve / Reject]
+    E --> F[Next Stage]
+    F --> G[Workflow Completed]
 ```
 
 ---
 ## ⏱ Escalation & Reminder Flow
 
 ```mermaid
-%%{init: { 'theme': 'base', 'themeVariables': { 'nodeTextColor': '#000000' }}}%%
 graph TD
-    A[Batch Sent] --> B[Wait 24 Hours]
+    A[Batch Sent] --> B[Wait]
     B --> C{Approved?}
-    C -- No --> D[Send Reminder]
-    D --> E[Wait Again]
-    E --> F{Still Pending?}
-    F -- Yes --> G[Escalate to Higher Role]
-
-    style C fill:#fff4dd,stroke:#d4a017
-    style F fill:#fff4dd,stroke:#d4a017
-    style G fill:#f8d7da,stroke:#721c24,stroke-width:2px
+    C -- No --> D[Reminder]
+    D --> E{Still Pending?}
+    E -- Yes --> F[Escalate]
 ```
-
-
 ---
 
-## 🚀 Quick Demo (2 Minutes)
+## Quick Start (2 Minutes)
 
 ```bash
 git clone https://github.com/apurba-labs/laravel-approval-engine
@@ -115,11 +112,13 @@ php artisan approval:demo
 ✔ Approval link generated
 
 ```
-## 📸 Demo Screenshot
+## Demo Screenshot
+
 ![Workflow](./docs/demo.png)
+
 ---
 
-## ⚙️ Installation
+## Installation
 
 
 ```bash
@@ -129,24 +128,23 @@ composer require apurba-labs/laravel-approval-engine
 
 ---
 
-## 🔧 Publish Config, Migrations & Seeders
+## Setup
 
 ```bash
 php artisan vendor:publish --tag=approval-config
 php artisan migrate
 php artisan db:seed --class="ApurbaLabs\ApprovalEngine\Database\Seeders\WorkflowDatabaseSeeder"
-php artisan db:seed --class="ApurbaLabs\ApprovalEngine\Database\Seeders\WorkflowSettingSeeder"
 
 ```
 
 ---
 
-## 🧩 Create Workflow Module
+## Create Workflow Module
 
 ```bash
 php artisan make:workflow-module Requisition
 ```
-### 🧠 Define Module
+### Example: Define Module
 
 ```php
 class RequisitionModule extends BaseWorkflowModule
@@ -234,120 +232,80 @@ class RequisitionModule extends BaseWorkflowModule
 ```
 
 ---
+## RBAC Integration (laravel-iam) 
 
-## Running Batch Processor
+```md
+This engine works seamlessly with:
+👉 Role-based access control (RBAC)
+👉 Permission-based approval resolution
+```
+Example:
+```php
 
-Run the batch processor via cron:
+$user->can('approval.approve');
+
+```
+---
+## Architecture
+```mermaid
+graph TD
+    A[UI / API] --> B[Approval Engine]
+    B --> C[Workflow Logic]
+    B --> D[Batch Processor]
+    B --> E[Stage Resolver]
+    B --> F[Events]
+    F --> G[Notifications]
+```
+---
+## Commands
 
 ```
 php artisan approval:send-batch
-```
-
-Example cron job:
-
-```
-* * * * * php artisan approval:send-batch
-```
-
----
-
-## Approval Links
-
-Emails contain secure token-based approval links:
-
-```
-/approval/batch/{token}
-```
-Approvers can:
-
-- Approve All
-- Reject
-- View Details
-
----
-## 🧠 Architecture
-
-### System Layering Overview
-
-```mermaid
-%%{init: { 'theme': 'base', 'themeVariables': { 'primaryColor': '#e1f5fe', 'nodeTextColor': '#000000', 'mainBkg': '#e1f5fe', 'lineColor': '#333' }}}%%
-graph TD
-    A[Artisan Command] --> B[WorkflowEngine]
-    B --> C[Actions Layer]
-    
-    subgraph Core
-    C --> D[BatchProcessor]
-    D --> E[StageResolver]
-    end
-    
-    E --> F[Events]
-    F --> G[Notifications]
-
-    %% Styles
-    classDef blackText color:#000000,stroke:#333,stroke-width:1px;
-    class A,B,C,D,E,F,G blackText;
-    
-    style B fill:#e1f5fe
-    style D fill:#fff3e0
-    style E fill:#f3e5f5
-    style G fill:#e8f5e9
-```
-This will generate a module structure ready for workflow integration.
-
----
-
-## Check Pending Batches
-```
 php artisan approval:status
 ```
-Example Output:
-
-✔ Batch processing <br />
-✔ Email notifications <br />
-✔ Modular workflows
-
 ---
-## 🚀 Roadmap
+## Roadmap
 
-### v1.0
+### v1.4 (Current 🚧)
 
-✔ Batch processing \
-✔ Email approvals \
-✔ Modular workflows
+✅ Workflow engine \
+✅ IAM integration \
+🔜 Filament UI \
+🔜 Rule Builder (no-code)
 
 ### v2.0
 
-🔜 Reminder engine \
 🔜 Slack / Teams integration \
-🔜 Escalation rules
+🔜 Advanced analytics
 
-### v3.0
+### v3.0 (SaaS)
+🔜 Multi-tenant system \
+🔜 API platform
+🔜 Dashboard (Next.js)
 
-🔜 Workflow UI builder <br />
-🔜 API support <br />
-🔜 Multi-tenant SaaS
-
-This project demonstrates:
-* **Requisition Approval Workflow**: A real-world implementation of the engine.
-* **Batch Processing**: See how 10+ records are grouped into a single approval task.
-* **Approval Links**: Test the token-based GET requests in a live Laravel 12 environment.
-
-To run the demo:
-1. Navigate to `example/laravel-demo`
-2. Run `composer install`
-3. Run `php artisan approval:demo` to generate test data and an approval link.
 ---
+
+## ⭐ Support the Project
+
+If this package has helped you streamline your enterprise workflows, please consider supporting it:
+
+*   **Star the Repo** – It helps other developers find this tool.
+*   **Share with your Team** – Spread the word to your fellow Laravel developers.
+*   **Contribute** – Submit a PR or open an issue to help make it even better.
+
+---
+
+### 🚀 Need a Custom Approval System?
+
+Need a hand setting up **Multi-level approvals**, **RBAC**, or a **SaaS-ready architecture**? I’m available for hire:
+
+📩 **[Connect on LinkedIn](https://www.linkedin.com/in/apurba-narayan-singh/)**  
+📧 **[Email Me: apurbansinghdev@gmail.com](mailto:apurbansinghdev@gmail.com)**
+
+
 ## 🤝 Contributing
 
 PRs are welcome.
-
----
-## ⭐ Support
-
-If this project helps you:
-
-- 👉 Give it a star ⭐
-- 👉 Share with your team
 
 ---
 ## License
