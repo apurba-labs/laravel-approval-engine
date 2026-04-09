@@ -20,6 +20,11 @@ class WorkflowStage extends Model
         'module',
         'stage_order',
         'role',
+        'assign_type',
+        'assign_value',
+        'scope_field',
+        'name',
+        'description'
     ];
 
     /**

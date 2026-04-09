@@ -2,6 +2,7 @@
 namespace ApurbaLabs\ApprovalEngine\Engine\Resolvers;
 
 use ApurbaLabs\ApprovalEngine\Models\WorkflowRule;
+use ApurbaLabs\IAM\Facades\IAM;
 
 // This class is responsible for resolving the recipient of a workflow task based on the assignment type and value defined in the workflow rule.
 class WorkflowRecipientResolver
@@ -43,24 +44,15 @@ class WorkflowRecipientResolver
         return $userModel::find($id);
     }
 
-    // This method assumes that the permission can be checked using the `can` method on the user model.
+    // This method uses the IAM facade to find users with the specified permission and scope, and returns the first matching user. Adjust as necessary for your application's structure and requirements.
     protected function resolveByPermission(string $permission, $scopeId = null)
     {
-        $userModel = config('auth.providers.users.model');
-
-        return $userModel::query()
-            ->get()
-            ->first(function ($user) use ($permission, $scopeId) {
-                return $user->can($permission, $scopeId);
-            });
+        return IAM::usersWithPermission($permission, $scopeId)->first();
     }
-    // This method resolves the scope ID for permission checks based on the stage's scope field and the provided context. It returns null if the scope field is not defined or if the context is not provided.
+    
+    // This method resolves the scope ID for permission checks based on the stage's scope field and the provided context. It returns null if no scope field is defined or if the context is not provided.
     protected function resolveScopeId($stage, $context = null)
     {
-        if (!property_exists($stage, 'scope_field') && !isset($stage->scope_field) ) {
-            return null;
-        }
-
         if (!$stage->scope_field || !$context) {
             return null;
         }
