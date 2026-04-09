@@ -15,7 +15,7 @@ return new class extends Migration
             if (!Schema::hasColumn('workflow_rules', 'assign_type')) {
                 $table->string('assign_type')->default('role')
                       ->after('role')
-                      ->comment('role, user, or custom_logic');
+                      ->comment('role, user, permission, etc. - determines how the assign_value should be interpreted');
             }
 
             if (!Schema::hasColumn('workflow_rules', 'assign_value')) {
