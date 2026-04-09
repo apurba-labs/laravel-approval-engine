@@ -16,10 +16,20 @@ class ApproveBatchAction
         $batch = WorkflowBatch::where('token',$token)->firstOrFail();
 
         $recipientResolver = app(WorkflowRecipientResolver::class);
-        $currentStage = WorkflowStage::query()
-            ->where('module', $batch->module)
-            ->where('stage_order', $batch->stage)
-            ->firstOrFail();
+        $stageNavigator = app(StageNavigator::class);
+
+        $currentStage = $stageNavigator->getCurrentStage(
+            $batch->module,
+            $batch->stage
+        );
+
+        $authorizedRecipient = $recipientResolver->resolve($currentStage, $batch);
+
+        abort_unless(
+            $authorizedRecipient && $authorizedRecipient->id === $userId,
+            403,
+            'Unauthorized to approve this batch.'
+        );
 
         WorkflowApproval::create([
             'batch_id'=>$batch->id,
@@ -31,9 +41,7 @@ class ApproveBatchAction
 
         event(new BatchApproved($batch));
 
-        $resolver = new StageNavigator();
-
-        $nextStage = $resolver->getNextStage(
+        $nextStage = $stageNavigator->getNextStage(
             $batch->module,
             $batch->stage
         );
