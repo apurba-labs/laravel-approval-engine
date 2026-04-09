@@ -16,16 +16,61 @@ use ApurbaLabs\ApprovalEngine\Notifications\WorkflowSingleNotification;
  */
 class NotificationService
 {
-    public function createNotification($workflow, $role, $recipient): WorkflowNotification
-    {
+    public function createNotification(
+        $workflow,
+        $stage,
+        $recipient,
+        ?string $assignType = null,
+        ?string $assignValue = null
+    ): WorkflowNotification {
+        $assignType ??= $stage->resolved_assign_type
+            ?? $stage->assign_type
+            ?? 'role';
+
+        $assignValue ??= $stage->resolved_assign_value
+            ?? $stage->assign_value
+            ?? $stage->role;
+
         return WorkflowNotification::create([
             'workflow_instance_id' => $workflow->id,
             'module' => $workflow->module,
-            'role' => $role,
+
+            // Legacy / display
+            'role' => $stage->role,
+
+            // Stage snapshot
+            'stage_id' => $stage->id,
+            'stage_order' => $stage->stage_order,
+
+            // Assignment snapshot
+            'assign_type' => $assignType,
+            'assign_value' => $assignValue,
+
+            // Deterministic grouping/auth key
+            'recipient_signature' => $this->buildRecipientSignature(
+                $assignType,
+                $assignValue
+            ),
+
+            // Intended recipient
             'recipient_id' => $recipient?->id,
             'recipient_type' => $recipient ? get_class($recipient) : null,
+
+            // Actual resolved recipient
+            'resolved_recipient_id' => $recipient?->id,
+            'resolved_recipient_type' => $recipient ? get_class($recipient) : null,
+
             'status' => 'pending',
         ]);
+    }
+
+    protected function buildRecipientSignature(string $assignType, string $assignValue, $scopeId = null): string 
+    {
+        return collect([
+            $assignType,
+            $assignValue,
+            $scopeId ? "scope:{$scopeId}" : null,
+        ])->filter()->implode(':');
     }
 
     public function dispatch(WorkflowNotification $notification): void

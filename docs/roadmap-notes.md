@@ -93,3 +93,6 @@ assign_type
 assign_value
 recipient_signature
 resolved_recipient
+
+** Findings Feature update**
+Notes for  Existing NotificationService need to update getSetting() role based now and fine for beta version will update next version to "Migrate settings toward assignment/recipient signature aware config" high priority.
