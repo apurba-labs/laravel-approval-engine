@@ -11,14 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        $column = DB::select("SHOW COLUMNS FROM workflow_settings WHERE Field = 'frequency'")[0];
-        $type = $column->Type; // e.g. enum('daily','weekly','monthly')
-
-        if (!str_contains($type, 'instant')) {
+        // Use the Schema manager to get column info (Works in MySQL & SQLite)
+        $columns = Schema::getColumnListing('workflow_settings');
+        
+        // Check if the column exists first (Safety check)
+        if (in_array('frequency', $columns)) {
             Schema::table('workflow_settings', function (Blueprint $table) {
+                // Laravel 11+ handles enum changes much better
                 $table->enum('frequency', ['instant', 'daily', 'weekly', 'monthly'])
-                      ->comment('instant, daily, weekly, monthly')
-                      ->change();
+                    ->comment('instant, daily, weekly, monthly')
+                    ->change();
             });
         }
     }

@@ -36,7 +36,7 @@ class StageNavigator
     {
         return WorkflowStage::where('module', $module)
             ->where('stage_order', $stageOrder)
-            ->first();
+            ->firstOrFail();
     }
 
     /**
