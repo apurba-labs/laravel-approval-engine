@@ -79,7 +79,7 @@ class HandleWorkflowStarted
             // Create notification
             $notification = $notificationService->createNotification(
                 $workflow,
-                $rule->role,
+                $stage,
                 $recipient
             );
 
