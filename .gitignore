@@ -1,7 +1,42 @@
-.phpunit.result.cache
+# --- Core Dependencies ---
 /vendor
-/example/laravel-demo/vendor
-/example/laravel-demo/storage
-/example/laravel-demo/bootstrap/cache
-/example/laravel-demo/.env
+/node_modules
 composer.lock
+
+# --- Environment & Secrets ---
+.env
+.env.*
+auth.json
+Homestead.json
+Homestead.yaml
+
+# --- Testing & Cache ---
+.phpunit.result.cache
+/.phpunit.cache
+.phpactor.json
+*.log
+.phpunit.result.cache
+
+# --- IDEs & OS Files ---
+/.idea
+/.vscode
+/.fleet
+/.nova
+/.zed
+.DS_Store
+Thumbs.db
+
+# --- Laravel Package Specific ---
+/public/build
+/public/hot
+/storage/*.key
+/storage/pail
+database.sqlite
+
+# --- Demo Apps (Laravel & Next.js) ---
+example/laravel-demo/vendor
+example/laravel-demo/node_modules
+example/laravel-demo/storage/
+example/laravel-demo/bootstrap/cache/
+example/laravel-demo/.env
+example/nextjs-dashboard/
