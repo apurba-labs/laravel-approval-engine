@@ -7,12 +7,19 @@ use ApurbaLabs\ApprovalEngine\Actions\MoveToNextStageAction;
 use ApurbaLabs\ApprovalEngine\Models\WorkflowBatch;
 use ApurbaLabs\ApprovalEngine\Models\WorkflowApproval;
 use ApurbaLabs\ApprovalEngine\Support\StageNavigator;
+use ApurbaLabs\ApprovalEngine\Engine\Resolvers\WorkflowRecipientResolver;
 
 class ApproveBatchAction
 {
     public function execute(string $token, int $userId)
     {
         $batch = WorkflowBatch::where('token',$token)->firstOrFail();
+
+        $recipientResolver = app(WorkflowRecipientResolver::class);
+        $currentStage = WorkflowStage::query()
+            ->where('module', $batch->module)
+            ->where('stage_order', $batch->stage)
+            ->firstOrFail();
 
         WorkflowApproval::create([
             'batch_id'=>$batch->id,
