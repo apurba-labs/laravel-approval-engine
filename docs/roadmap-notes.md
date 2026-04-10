@@ -94,5 +94,16 @@ assign_value
 recipient_signature
 resolved_recipient
 
+- workflow_batches table
+Role column
+$table->dropColumn('role');
+
+- workflow_settings table
+Role column
+$table->dropColumn('role');
+
 ** Findings Feature update**
-Notes for  Existing NotificationService need to update getSetting() role based now and fine for beta version will update next version to "Migrate settings toward assignment/recipient signature aware config" high priority.
+- Notes for  Existing NotificationService need to update getSetting() role based now and fine for beta version will update next version to "Migrate settings toward assignment/recipient signature aware config" high priority.
+
+- workflow_settings table we will implement logic 
+for recipient_signature_pattern later in v2 when actually support pattern logic.

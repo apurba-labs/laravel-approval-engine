@@ -11,7 +11,8 @@ class ApproveBatchAction
 {
     public function execute(string $token, int $userId)
     {
-        $batch = WorkflowBatch::where('token', $token)->firstOrFail();
+        $batch = WorkflowBatch::where('token', $token)
+            ->firstOrFail();
 
         $this->authorizeApprover($batch, $userId);
 
@@ -20,7 +21,25 @@ class ApproveBatchAction
             ->get();
 
         foreach ($notifications as $notification) {
-            $this->approveNotification($notification, $userId);
+
+            WorkflowApproval::create([
+                'workflow_instance_id' => $notification->workflow_instance_id,
+                'batch_id' => $batch->id,
+                'user_id' => $userId,
+                'stage' => $notification->stage_order,
+                'status' => 'approved',
+                'approved_at' => now(),
+            ]);
+
+            app(MoveToNextStageAction::class)
+                ->execute(
+                    $notification->workflowInstance,
+                    $notification->stage_order
+                );
+
+            $notification->update([
+                'status' => 'approved',
+            ]);
         }
 
         $batch->update([
@@ -31,9 +50,12 @@ class ApproveBatchAction
         return $batch->fresh();
     }
 
-    protected function authorizeApprover(WorkflowBatch $batch, int $userId): void
-    {
+    protected function authorizeApprover(
+        WorkflowBatch $batch,
+        int $userId
+    ): void {
         $userModel = config('auth.providers.users.model');
+
         $user = $userModel::findOrFail($userId);
 
         $authorized = match ($batch->assign_type) {
@@ -56,24 +78,5 @@ class ApproveBatchAction
             403,
             'Unauthorized to approve this batch.'
         );
-    }
-
-    protected function approveNotification(
-        WorkflowNotification $notification,
-        int $userId
-    ): void {
-        WorkflowApproval::create([
-            'workflow_instance_id' => $notification->workflow_instance_id,
-            'batch_id' => $notification->batch_id,
-            'user_id' => $userId,
-            'stage' => $notification->stage_order,
-            'status' => 'approved',
-            'approved_at' => now(),
-        ]);
-
-        $workflow = $notification->workflowInstance;
-
-        app(MoveToNextStageAction::class)
-            ->execute($workflow, $notification->stage_order);
     }
 }
