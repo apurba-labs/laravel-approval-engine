@@ -24,7 +24,10 @@ return new class extends Migration
             $table->text('recipient_signature')->nullable()->after('error');
 
             // Actual resolved entity used for notification/approval
-            $table->nullableMorphs('resolved_recipient');
+            $table->nullableMorphs(
+                'resolved_recipient',
+                'idx_wf_notif_resolved_recipient'
+            );
 
             // Indexes
             $table->index(['stage_id', 'status']);
