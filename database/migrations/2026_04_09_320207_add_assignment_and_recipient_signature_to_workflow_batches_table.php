@@ -14,10 +14,10 @@ return new class extends Migration
         Schema::table('workflow_batches', function (Blueprint $table) {
             // Assignment snapshot
             $table->string('assign_type')->nullable()->after('role');
-            $table->text('assign_value')->nullable()->after('assign_type');
+            $table->string('assign_value', 255)->nullable()->after('assign_type');
 
             // Deterministic batching / auth signature
-            $table->text('recipient_signature')->nullable()->after('assign_value');
+            $table->string('recipient_signature', 255)->nullable()->after('assign_value');
 
         });
     }

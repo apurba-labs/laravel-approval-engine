@@ -14,15 +14,15 @@ return new class extends Migration
         Schema::table('workflow_settings', function (Blueprint $table) {
             // Assignment snapshot
             $table->string('assign_type')->nullable()->after('role')->comment('role, permission, user');
-            $table->text('assign_value')->nullable()->after('assign_type')->comment('Role slug, permission key, or user id');
+            $table->string('assign_value', 255)->nullable()->after('assign_type')->comment('Role slug, permission key, or user id');
 
             // Deterministic batching / auth signature
-            $table->text('recipient_signature_pattern')->nullable()->after('assign_value')->comment('Pattern for generating recipient signature');
+            $table->string('recipient_signature_pattern', 255)->nullable()->after('assign_value')->comment('Pattern for generating recipient signature');
 
             // Drop the unique index by its custom name
             $table->dropUnique('uidx_role_module');
 
-            $table->index([module, assign_type, assign_value], 'workflow_settings_assignment_idx');
+            $table->index(['module', 'assign_type', 'assign_value'], 'workflow_settings_assignment_idx');
         });
     }
 

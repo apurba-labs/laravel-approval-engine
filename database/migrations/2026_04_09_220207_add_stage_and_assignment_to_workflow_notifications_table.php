@@ -18,10 +18,10 @@ return new class extends Migration
 
             // Assignment snapshot
             $table->string('assign_type')->nullable()->after('stage_order');
-            $table->text('assign_value')->nullable()->after('assign_type');
+            $table->string('assign_value', 255)->nullable()->after('assign_type');
 
             // Deterministic batching / auth signature
-            $table->text('recipient_signature')->nullable()->after('error');
+            $table->string('recipient_signature', 255)->nullable()->after('error');
 
             // Actual resolved entity used for notification/approval
             $table->nullableMorphs(
