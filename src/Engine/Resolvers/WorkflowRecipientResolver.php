@@ -31,9 +31,7 @@ class WorkflowRecipientResolver
     // This method assumes that the user model has a 'role' attribute. Adjust as necessary for your application's structure.
     protected function resolveByRole(string $role)
     {
-        $userModel = config('auth.providers.users.model');
-        // Legacy fallback support: if the role is not found in the user model, we can return null or throw an exception based on your application's needs.
-        return $userModel::where('role', $role)->first();
+        return IAM::usersWithRole($role)->first();
     }
 
     // This method retrieves a user by their ID. Adjust as necessary for your application's structure.
