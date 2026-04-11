@@ -7,31 +7,42 @@ use Illuminate\Support\Facades\Notification;
 
 use ApurbaLabs\ApprovalEngine\Models\{WorkflowRule, WorkflowInstance, WorkflowLog, WorkflowNotification, WorkflowSetting, WorkflowStage};
 use ApurbaLabs\ApprovalEngine\Tests\Support\Models\User;
-use ApurbaLabs\ApprovalEngine\Tests\Support\Models\Role;
+use ApurbaLabs\IAM\Models\Role;
+use ApurbaLabs\IAM\Models\Permission;
 
 use ApurbaLabs\ApprovalEngine\Engine\WorkflowEngine;
 use ApurbaLabs\ApprovalEngine\Notifications\WorkflowSingleNotification;
 use ApurbaLabs\ApprovalEngine\Notifications\WorkflowBatchNotification;
+use Illuminate\Support\Str;
+
+use ApurbaLabs\ApprovalEngine\Tests\Support\Traits\InteractsWithIAM;
 
 class WorkflowLifecycleTest extends TestCase
 {
+    use InteractsWithIAM;
 
-    /** @test 
+    /** @test
      * @group v1.3
-    */
+     */
     public function it_executes_the_full_v13_instance_lifecycle()
     {
         Notification::fake();
+
+        $roleName = 'COO';
+        $scopeId = null;
+        $permissionStr = 'approval.finance.approve';
         
-        // Create user (recipient)
-        $user = Role::where('name', 'COO')->first()?->users()->first() ?? User::factory()->withRole('COO')->create();
+        // Create User using the refined helper
+        $user = $this->createUserWithPermission($roleName, $scopeId, [$permissionStr]);
 
         WorkflowStage::factory()->create([
             'module' => 'purchase',
             'stage_order' => 1,
             'role' => 'COO',
+            'assign_type' => 'permission',
+            'assign_value' => 'approval.finance.approve',
         ]);
-        // Rule: purchase > 5000 → COO
+
         WorkflowRule::factory()
             ->forModule('purchase')
             ->forField('total_amount')
@@ -39,50 +50,49 @@ class WorkflowLifecycleTest extends TestCase
             ->withValue('5000')
             ->targetRole('COO')
             ->withPriority(10)
-            ->create();
+            ->create([
+                'assign_type' => 'permission',
+                'assign_value' => 'approval.finance.approve',
+            ]);
 
-        // Setting: instant notification for COO
         WorkflowSetting::factory()->create([
             'module' => 'purchase',
             'role' => 'COO',
-            'frequency' => 'instant', // IMPORTANT
+            'frequency' => 'instant',
             'is_active' => 1,
-            'send_time' => '00:00:00'
+            'send_time' => '00:00:00',
+            'assign_type' => 'permission',
+            'assign_value' => 'approval.finance.approve',
         ]);
 
         $engine = app(WorkflowEngine::class);
 
-        $data = [
+        $instance = $engine->start('purchase', [
             'total_amount' => 7500,
-            'user_id' => $user->id // REQUIRED for recipient
-        ];
+        ]);
 
-        // --- TEST: Start ---
-        $instance = $engine->start('purchase', $data);
-
-        // Rule applied → COO
         $this->assertDatabaseHas('workflow_instances', [
             'id' => $instance->id,
             'module' => 'purchase',
             'current_stage_order' => 1,
-            'status' => 'pending'
+            'status' => 'pending',
         ]);
 
-        // --- TEST: Logs ---
         $this->assertDatabaseHas('workflow_logs', [
             'workflow_instance_id' => $instance->id,
             'role' => 'COO',
+            'stage_order' => 1,
         ]);
 
-        // --- TEST: Notification created ---
         $this->assertDatabaseHas('workflow_notifications', [
             'workflow_instance_id' => $instance->id,
             'role' => 'COO',
+            'assign_type' => 'permission',
+            'assign_value' => 'approval.finance.approve',
             'status' => 'sent',
             'recipient_id' => $user->id,
         ]);
 
-        // --- TEST: Notification actually sent ---
         Notification::assertSentTo(
             $user,
             WorkflowSingleNotification::class

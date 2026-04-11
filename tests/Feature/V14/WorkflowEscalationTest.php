@@ -9,9 +9,11 @@ use ApurbaLabs\ApprovalEngine\Models\WorkflowApproval;
 use ApurbaLabs\ApprovalEngine\Models\WorkflowInstance;
 use ApurbaLabs\ApprovalEngine\Models\WorkflowNotification;
 
+use ApurbaLabs\ApprovalEngine\Tests\Support\Traits\InteractsWithIAM;
+
 class WorkflowEscalationTest extends TestCase
 {
-
+    use InteractsWithIAM;
     /** @test 
      * @group v1.4
     */
@@ -20,31 +22,53 @@ class WorkflowEscalationTest extends TestCase
         // Freeze time
         Carbon::setTestNow(now());
 
-        // Create workflow instance
+        
+        // Create User using the refined helper
+        $user = $this->createUserWithPermission('admin');
+
         $workflow = WorkflowInstance::create([
             'module' => 'expense',
             'status' => 'pending',
             'current_stage_order'=>1,
-            'payload' => ['amount' => 15000],
+            'payload' => [],
         ]);
 
-        // Create approval with expired SLA
-        $approval = WorkflowApproval::create([
+        WorkflowNotification::create([
             'workflow_instance_id' => $workflow->id,
-            'user_id' => 1,
+            'module' => 'expense',
             'status' => 'pending',
-            'assigned_at' => now()->subHours(2),
-            'due_at' => now()->subMinutes(1), // already expired
+            'stage_order' => 1,
+            'assign_type' => 'role',
+            'assign_value' => 'admin',
+            'escalate_at' => now()->subMinute(),
         ]);
 
+        $workflow = WorkflowInstance::create([
+            'module' => 'expense',
+            'payload' => [
+                'amount' => 15000,
+            ],
+            'current_stage_order' => 1,
+            'status' => 'pending',
+        ]);
+
+        WorkflowNotification::create([
+            'workflow_instance_id' => $workflow->id,
+            'module' => 'expense',
+            'status' => 'pending',
+            'stage_order' => 1,
+            'assign_type' => 'role',
+            'assign_value' => 'admin',
+            'escalate_at' => now()->subMinute(),
+        ]);
         // Run command
         $this->artisan('workflow:process-notifications');
 
         // Assert escalation notification created
         $this->assertDatabaseHas('workflow_notifications', [
             'workflow_instance_id' => $workflow->id,
-            'module' => 'expense',
-            'role' => 'admin', // fallback role
+            'assign_type' => 'role',
+            'assign_value' => 'admin',
         ]);
     }
     /** @test 

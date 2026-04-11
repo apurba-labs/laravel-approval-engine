@@ -56,6 +56,11 @@ class SendWorkflowBatchCommand extends Command
             $start = $window['start'];
             $end = $window['end'];
 
+            if (!$first->recipient_signature) {
+                $this->warn("Skipping notification group without recipient signature.");
+                continue;
+            }
+
             $existing = $processor->findExistingBatch(
                 $first->module,
                 $first->recipient_signature,

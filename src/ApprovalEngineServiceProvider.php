@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Route;
 
 use ApurbaLabs\ApprovalEngine\Providers\EventServiceProvider as PackageEventServiceProvider;
+use ApurbaLabs\IAM\Providers\IAMServiceProvider;
 
 use ApurbaLabs\ApprovalEngine\Console\InstallCommand;
 use ApurbaLabs\ApprovalEngine\Console\SendWorkflowBatchCommand;
@@ -49,6 +50,8 @@ class ApprovalEngineServiceProvider extends ServiceProvider
     {
         
         $this->app->register(PackageEventServiceProvider::class);
+        $this->app->register(IAMServiceProvider::class);
+
         
         $this->commands([
             InstallCommand::class,

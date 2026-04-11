@@ -61,6 +61,11 @@ class NotificationService
             'resolved_recipient_type' => $recipient ? get_class($recipient) : null,
 
             'status' => 'pending',
+            'retry_count' => 0,
+            'max_retries' => 3,
+            'escalate_at' => now()->addHours(24),
+            'escalate_assign_type' => $assignType,
+            'escalate_assign_value' => $assignValue,
         ]);
     }
 
