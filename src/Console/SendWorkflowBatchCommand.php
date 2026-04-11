@@ -1,155 +1,149 @@
 <?php
+
 namespace ApurbaLabs\ApprovalEngine\Console;
 
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
-use ApurbaLabs\ApprovalEngine\Engine\WorkflowEngine;
-
-use ApurbaLabs\ApprovalEngine\Support\StageNavigator;
 use ApurbaLabs\ApprovalEngine\Support\BatchProcessor;
 use ApurbaLabs\ApprovalEngine\Support\BatchWindowResolver;
-
 use ApurbaLabs\ApprovalEngine\Models\WorkflowSetting;
 use ApurbaLabs\ApprovalEngine\Models\WorkflowNotification;
 use ApurbaLabs\ApprovalEngine\Services\NotificationService;
 
 class SendWorkflowBatchCommand extends Command
 {
-    protected $signature = 'approval:send-batch {--force : Ignore last_run_at and send anyway}';
+    protected $signature = 'approval:send-batch {--force}';
 
     protected $description = 'Process workflow approval batches';
 
     public function handle()
     {
-        $engine = app(WorkflowEngine::class);
         $processor = app(BatchProcessor::class);
         $windowResolver = app(BatchWindowResolver::class);
         $notificationService = app(NotificationService::class);
 
-        // START FROM SETTINGS
-        $settingsList = WorkflowSetting::where('is_active', 1)->get();
+        $pendingNotifications = WorkflowNotification::query()
+            ->where('status', 'pending')
+            ->whereNull('batch_id')
+            ->get()
+            ->groupBy(fn ($notification) =>
+                $notification->module . '|' . $notification->recipient_signature
+            );
 
-        if ($settingsList->isEmpty()) {
-            $this->warn('No active workflow settings found.');
+        if ($pendingNotifications->isEmpty()) {
+            $this->info('No pending notifications found.');
             return Command::SUCCESS;
         }
 
-        foreach ($settingsList as $settings) {
+        foreach ($pendingNotifications as $groupKey => $notifications) {
 
-            $moduleName = $settings->module;
+            $first = $notifications->first();
 
-            $this->info("Processing module: {$moduleName} | role: {$settings->role}");
+            $setting = $this->resolveSetting($first);
 
-            // validate module exists
-            try {
-                $module = $engine->getModule($moduleName);
-            } catch (\Exception $e) {
-                $this->error("Module not found: {$moduleName}");
+            if (!$setting) {
+                $this->warn("No workflow setting found for group: {$groupKey}");
                 continue;
             }
 
-            // schedule check
-            if (!$this->shouldSendToday($settings)) {
-                $this->line("Skipping (schedule not matched)");
+            if (!$this->shouldSendToday($setting)) {
                 continue;
             }
 
-            $window = $windowResolver->resolve($settings);
-            $start = $window['start'] ?? now()->subDay();
-            $end = $window['end'] ?? now();
+            $window = $windowResolver->resolve($setting);
 
-            // prevent duplicate batch
+            $start = $window['start'];
+            $end = $window['end'];
+
+            if (!$first->recipient_signature) {
+                $this->warn("Skipping notification group without recipient signature.");
+                continue;
+            }
+
             $existing = $processor->findExistingBatch(
-                $moduleName,
-                $settings->role,
+                $first->module,
+                $first->recipient_signature,
                 $start,
                 $end
             );
 
             if ($existing) {
-                $this->line("Batch already exists, skipping...");
                 continue;
             }
 
-            // 9fetch notifications
-            $notifications = WorkflowNotification::where('module', $moduleName)
-                ->where('role', $settings->role)
-                ->where('status', 'pending')
-                ->whereBetween('created_at', [$start, $end])
-                ->get();
+            $batch = $processor->createBatch(
+                module: $first->module,
+                recipientSignature: $first->recipient_signature,
+                start: $start,
+                end: $end,
+                role: $first->role,
+                assignType: $first->assign_type,
+                assignValue: $first->assign_value
+            );
 
-            $this->line("Pending notifications: {$notifications->count()}");
+            WorkflowNotification::whereIn('id', $notifications->pluck('id'))
+                ->update([
+                    'batch_id' => $batch->id,
+                ]);
 
-            if ($notifications->isEmpty()) {
-                continue;
-            }
+            $notificationService->sendBatch($batch, $notifications);
 
-            try {
-                // create batch
-                $batch = $processor->createBatch(
-                    $moduleName,
-                    $settings->role,
-                    $start,
-                    $end
-                );
+            $processor->markSent($batch, $notifications->count());
 
-                // send
-                $notificationService->sendBatch($batch, $notifications);
+            $setting->update([
+                'last_run_at' => now(),
+            ]);
 
-                // mark notifications
-                WorkflowNotification::whereIn('id', $notifications->pluck('id'))
-                    ->update([
-                        'status' => 'sent',
-                        'sent_at' => now(),
-                    ]);
-
-                // update batch
-                $processor->markSent($batch, $notifications->count());
-
-                // update setting AFTER success
-                $settings->update(['last_run_at' => now()]);
-
-                $this->info("Batch sent ({$notifications->count()})");
-
-            } catch (\Exception $e) {
-                $this->error("Batch failed: " . $e->getMessage());
-
-                if (isset($batch)) {
-                    $processor->markFailed($batch, $e->getMessage());
-                }
-            }
+            $this->info("Batch sent for {$groupKey}");
         }
 
         return Command::SUCCESS;
     }
 
-    private function shouldSendToday($setting)
+    protected function resolveSetting($notification): ?WorkflowSetting
     {
-        if ($this->option('force')) return true;
+        return WorkflowSetting::query()
+            ->where('module', $notification->module)
+            ->where(function ($q) use ($notification) {
+                $q->where(function ($sub) use ($notification) {
+                    $sub->where('assign_type', $notification->assign_type)
+                        ->where('assign_value', $notification->assign_value);
+                })->orWhere('role', $notification->role);
+            })
+            ->first();
+    }
 
-        $timezone = $setting->timezone ?? config('app.timezone', 'UTC');
+    protected function shouldSendToday($setting): bool
+    {
+        if ($this->option('force')) {
+            return true;
+        }
+
+        $timezone = $setting->timezone ?? config('app.timezone');
+
         $now = now()->timezone($timezone);
 
         if ($setting->last_run_at) {
             $lastRun = Carbon::parse($setting->last_run_at)->timezone($timezone);
+
             if ($lastRun->isToday()) {
-                return false; 
+                return false;
             }
         }
 
         $currentTime = $now->format('H:i');
         $scheduledTime = Carbon::parse($setting->send_time)->format('H:i');
-        if ($currentTime < $scheduledTime) { 
-            return false; // not yet time
+
+        if ($currentTime < $scheduledTime) {
+            return false;
         }
 
         return match ($setting->frequency) {
-            'daily'   => true,
-            'weekly'  => (int) $now->dayOfWeek === (int) $setting->weekly_day,
+            'daily' => true,
+            'weekly' => (int) $now->dayOfWeek === (int) $setting->weekly_day,
             'monthly' => (int) $now->day === (int) $setting->monthly_date,
-            default   => false,
+            default => false,
         };
     }
 }

@@ -4,28 +4,37 @@ namespace ApurbaLabs\ApprovalEngine\Actions;
 
 use ApurbaLabs\ApprovalEngine\Engine\WorkflowEngine;
 use ApurbaLabs\ApprovalEngine\Events\WorkflowCompleted;
+use ApurbaLabs\ApprovalEngine\Models\WorkflowLog;
 
 class CompleteWorkflowAction
 {
-    public function execute($batch)
+    public function execute($workflow)
     {
-        $batch->update([
-            'status'=>'completed',
-            'completed_at'=>now()
+        $workflow->update([
+            'status' => 'completed',
+            'completed_at' => now(),
         ]);
 
-        // Update the Source Records (e.g., Requisitions)
+        WorkflowLog::create([
+            'workflow_instance_id' => $workflow->id,
+            'module' => $workflow->module,
+            'role' => 'completed',
+            'stage_order' => $workflow->current_stage_order,
+            'entered_at' => now(),
+        ]);
+
         $engine = app(WorkflowEngine::class);
-        $module = $engine->getModule($batch->module);
+        $module = $engine->getModule($workflow->module);
+
         $module->query()
-            ->whereBetween($module->approvedColumn(), [$batch->window_start, $batch->window_end])
+            ->whereKey($workflow->source_id)
             ->update([
                 'status' => 'fully_approved',
-                'stage_status' => 'finished'
+                'stage_status' => 'finished',
             ]);
 
-        event(new WorkflowCompleted($batch));
+        event(new WorkflowCompleted($workflow));
 
-        return $batch;
+        return $workflow->fresh();
     }
 }

@@ -13,35 +13,105 @@ return new class extends Migration
     {
         Schema::create('workflow_notifications', function (Blueprint $table) {
             $table->id();
+
+            // Core
             $table->string('module');
-            $table->string('role');
+            $table->string('role')->nullable(); // legacy fallback only
 
-            // This creates recipient_id and recipient_type
-            $table->nullableMorphs('recipient'); 
+            // Recipient (initial resolved target)
+            $table->nullableMorphs('recipient');
 
-            // Link to the Instance (Source of Truth)
-            $table->unsignedBigInteger('workflow_instance_id');
+            // Source of truth
+            $table->foreignId('workflow_instance_id')
+                ->constrained('workflow_instances')
+                ->cascadeOnDelete();
 
-            // Link to the Batch (Only filled when grouped for Daily/Weekly)
-            $table->unsignedBigInteger('batch_id')->nullable();
+            // Batch (group delivery)
+            $table->foreignId('batch_id')
+                ->nullable()
+                ->constrained('workflow_batches')
+                ->nullOnDelete();
 
+            // -------------------------------
+            // 🧠 Stage Snapshot
+            // -------------------------------
+            $table->foreignId('stage_id')
+                ->nullable()
+                ->constrained('workflow_stages')
+                ->nullOnDelete();
+
+            $table->integer('stage_order')->nullable();
+
+            // -------------------------------
+            // 🧠 Assignment Snapshot (CRITICAL)
+            // -------------------------------
+            $table->string('assign_type')->nullable(); // role, permission, user
+            $table->string('assign_value', 255)->nullable();
+
+            // Deterministic batching / auth
+            $table->string('recipient_signature', 255)->nullable();
+
+            // Final resolved entity (who actually got it)
+            $table->nullableMorphs(
+                'resolved_recipient',
+                'idx_wf_notif_resolved_recipient'
+            );
+
+            // -------------------------------
+            // 📬 Delivery State
+            // -------------------------------
             $table->boolean('is_sent')->default(false);
             $table->timestamp('sent_at')->nullable();
-            $table->string('status')->default('pending')->comment('pending, sent, failed');; // pending, sent, failed
+
+            $table->string('status')
+                ->default('pending')
+                ->comment('pending, sent, failed, permanent_failed, escalated');
+
             $table->text('error')->nullable();
+
+            // -------------------------------
+            // 🔁 Retry System
+            // -------------------------------
+            $table->integer('retry_count')->default(0);
+            $table->integer('max_retries')->default(3);
+            $table->timestamp('next_retry_at')->nullable();
+
+            // -------------------------------
+            // 🚨 Escalation System
+            // -------------------------------
+            $table->timestamp('escalate_at')->nullable();
+
+            $table->string('escalate_assign_type')->nullable();
+            $table->string('escalate_assign_value', 255)->nullable();
+
+            $table->timestamp('escalated_at')->nullable();
+
             $table->timestamps();
 
-            // Foreign Key Constraints for Data Integrity
-            $table->foreign('workflow_instance_id')
-                  ->references('id')->on('workflow_instances')
-                  ->onDelete('cascade');
-            
-            $table->foreign('batch_id')
-                  ->references('id')->on('workflow_batches')
-                  ->onDelete('set null');
+            // -------------------------------
+            // Indexes
+            // -------------------------------
 
-            // Index for the Cron Job to find unsent items quickly
-            $table->index(['module', 'role', 'is_sent']);
+            // Batch lookup
+            $table->index(
+                ['module', 'recipient_signature', 'is_sent'],
+                'idx_notifications_batch_lookup'
+            );
+
+            // Retry queue
+            $table->index(
+                ['status', 'next_retry_at'],
+                'idx_notifications_retry_queue'
+            );
+
+            // Escalation queue
+            $table->index(
+                ['status', 'escalate_at'],
+                'idx_notifications_escalation_queue'
+            );
+
+            // Stage tracking
+            $table->index(['stage_id', 'status']);
         });
     }
 

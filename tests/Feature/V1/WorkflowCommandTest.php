@@ -27,38 +27,46 @@ use ApurbaLabs\ApprovalEngine\Mail\BatchApprovalMail;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
+use ApurbaLabs\ApprovalEngine\Tests\Support\Traits\InteractsWithIAM;
 
 class WorkflowCommandTest extends TestCase
 {
+    use InteractsWithIAM;
+
     /** @test 
      * @group v1
     */
     public function workflow_command_runs_successfully()
     {
-        // ABSOLUTE WIPE: Remove everything created by the Seeder
-        WorkflowSetting::query()->delete();
-        WorkflowNotification::query()->delete();
-        WorkflowBatch::query()->delete();
 
         // Set Time
         $testTime =Carbon::create(2026, 3, 16, 10, 0, 0, 'Asia/Dhaka');
         $this->travelTo($testTime);
 
+        $user = $this->createUserWithPermission('hosd');
+
         // Create THE ONLY setting in the DB
         $setting = WorkflowSetting::factory()->create([
             'module' => 'requisition',
-            'role' => 'HOSD',
+            'role' => 'hosd',
             'frequency' => 'daily',
             'is_active' => 1,
-            'send_time' => '09:00:00'
+            'send_time' => '09:00:00',
+            'assign_type' => 'role',
+            'assign_value' => 'hosd',
         ]);
 
         // Create THE ONLY notification
         WorkflowNotification::factory()->create([
             'module' => 'requisition',
-            'role' => 'HOSD',
+            'role' => 'hosd',
             'is_sent' => 0,
-            'batch_id' => null
+            'batch_id' => null,
+            'assign_type' => 'role',
+            'assign_value' => 'hosd',
+            'recipient_signature' => 'role:hosd', 
+            'recipient_id' => $user->id,
+            'recipient_type' => get_class($user),
         ]);
 
         // Act
@@ -67,7 +75,7 @@ class WorkflowCommandTest extends TestCase
         // Assert
         $this->assertDatabaseHas('workflow_batches', [
             'module' => 'requisition',
-            'role' => 'HOSD'
+            'role' => 'hosd',
         ]);
     }
 
@@ -141,10 +149,11 @@ class WorkflowCommandTest extends TestCase
         $mondayDate = Carbon::create(2026, 3, 16, 10, 0, 0, 'Asia/Dhaka');
         $sundayDate = Carbon::create(2026, 3, 15, 10, 0, 0, 'Asia/Dhaka');
 
+        $user = $this->createUserWithPermission('hosd');
         // 1. Create the Setting (Weekly on Monday)
         WorkflowSetting::factory()
                 ->forModule('requisition')
-                ->forRole('HOSD')
+                ->forRole('hosd')
                 ->atFrequency('weekly', 1) 
                 ->atSendTime('09:00:00')
                 ->create();
@@ -153,32 +162,42 @@ class WorkflowCommandTest extends TestCase
         $this->travelTo($sundayDate);
         
         // Create a pending notification for Sunday
-        WorkflowNotification::factory()->forModule('requisition')->forRole('HOSD')->create([
+        WorkflowNotification::factory()->forModule('requisition')->forRole('hosd')->create([
             'is_sent' => false,
             'batch_id' => null,
+            'assign_type' => 'role',
+            'assign_value' => 'hosd',
+            'recipient_signature' => 'role:hosd', 
+            'recipient_id' => $user->id,
+            'recipient_type' => get_class($user),
         ]);
 
         $this->artisan('approval:send-batch');
         
         $this->assertDatabaseMissing('workflow_batches', [
             'module' => 'requisition',
-            'role' => 'HOSD'
+            'role' => 'hosd'
         ]);
 
         // --- TEST MONDAY: SHOULD send ---
         $this->travelTo($mondayDate);
 
         // Create another pending notification for Monday
-        WorkflowNotification::factory()->forModule('requisition')->forRole('HOSD')->create([
+        WorkflowNotification::factory()->forModule('requisition')->forRole('hosd')->create([
             'is_sent' => false,
             'batch_id' => null,
+            'assign_type' => 'role',
+            'assign_value' => 'hosd',
+            'recipient_signature' => 'role:hosd', 
+            'recipient_id' => $user->id,
+            'recipient_type' => get_class($user),
         ]);
 
         $this->artisan('approval:send-batch');
         
         $this->assertDatabaseHas('workflow_batches', [
             'module' => 'requisition',
-            'role' => 'HOSD'
+            'role' => 'hosd'
         ]);
     }
 
@@ -188,7 +207,7 @@ class WorkflowCommandTest extends TestCase
 
     public function workflow_command_creates_batch_and_sends_notifications()
     {
-        $this->withoutExceptionHandling();
+        ///$this->withoutExceptionHandling();
 
         Notification::fake(); // use Notification instead of Log
 
@@ -196,29 +215,38 @@ class WorkflowCommandTest extends TestCase
         $testTime = now()->next('Monday')->setHour(10);
         $this->travelTo($testTime);
 
-        $user = Role::where('name', 'HOSD')->first()?->users()->first() ?? User::factory()->withRole('HOSD')->create();
+        $user = $this->createUserWithPermission('hosd');
 
         // Setting
         WorkflowSetting::factory()
             ->forModule('requisition')
-            ->forRole('HOSD')
+            ->forRole('hosd')
             ->atFrequency('weekly', 1)
             ->atSendTime('09:00:00')
-            ->create();
+            ->create([
+                'assign_type' => 'role',
+                'assign_value' => 'hosd',
+            ]);
 
         // Instance
         $instance = WorkflowInstance::factory()->create([
             'module' => 'requisition',
+            'status' => 'pending',
+            'current_stage_order'=>1,
+            'payload' => [
+                'user_id' => $user->id
+            ]
         ]);
 
         // Notification (IMPORTANT)
         WorkflowNotification::factory()->create([
             'workflow_instance_id' => $instance->id,
             'module' => 'requisition',
-            'role' => 'HOSD',
+            'role' => 'hosd',
             'status' => 'pending',
             'recipient_id' => $user->id,
             'recipient_type' => User::class,
+            'recipient_signature' => 'role:hosd',
             'created_at' => now()->subMinutes(5),
         ]);
 
@@ -234,7 +262,7 @@ class WorkflowCommandTest extends TestCase
         // Assert Batch Created
         $this->assertDatabaseHas('workflow_batches', [
             'module' => 'requisition',
-            'role' => 'HOSD'
+            'role' => 'hosd'
         ]);
 
         // Assert Notifications Updated

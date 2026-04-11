@@ -67,7 +67,7 @@ class WorkflowEngine
             ]);
 
             // fire event
-            event(new WorkflowStarted(collect([$workflow])));
+            event(new WorkflowStarted($workflow));
 
             return $workflow;
 
@@ -150,18 +150,10 @@ class WorkflowEngine
             ->execute($moduleInstance, $start, $end);
     }
 
-    public function approveBatch($token, $userId): EloquentCollection
+    public function approveBatch($token, $userId): WorkflowBatch
     {
         return app(ApproveBatchAction::class)
             ->execute($token, $userId);
-    }
-
-    protected function moveToNextStage($batch,$stage): EloquentCollection 
-    {
-
-        return app(MoveToNextStageAction::class)
-            ->execute($token, $userId);
-
     }
 
     private function isWithinWindow($setting): bool

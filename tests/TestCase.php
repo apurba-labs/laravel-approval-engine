@@ -72,6 +72,12 @@ abstract class TestCase extends BaseTestCase
         parent::setUp();
     }
 
+    protected function tearDown(): void
+    {
+        \Illuminate\Support\Facades\Schema::disableForeignKeyConstraints();
+        parent::tearDown();
+    }
+
     /**
      * Define package providers.
      * (Equivalent to adding to config/app.php)

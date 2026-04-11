@@ -1,21 +1,23 @@
-# Core Dependencies
+# --- Core Dependencies ---
 /vendor
 /node_modules
+composer.lock
 
-# Environment & Private Files
+# --- Environment & Secrets ---
 .env
 .env.*
 auth.json
 Homestead.json
 Homestead.yaml
 
-# Testing & Cache
+# --- Testing & Cache ---
 .phpunit.result.cache
 /.phpunit.cache
 .phpactor.json
 *.log
+.phpunit.result.cache
 
-# IDEs & Editors
+# --- IDEs & OS Files ---
 /.idea
 /.vscode
 /.fleet
@@ -24,29 +26,17 @@ Homestead.yaml
 .DS_Store
 Thumbs.db
 
-# Laravel Specific (if they end up in your package)
+# --- Laravel Package Specific ---
 /public/build
 /public/hot
 /storage/*.key
 /storage/pail
 database.sqlite
 
-# ignore the demo app's local files
+# --- Demo Apps (Laravel & Next.js) ---
 example/laravel-demo/vendor
-example/laravel-demo/.env
 example/laravel-demo/node_modules
-example/laravel-demo/storage/logs/
-example/laravel-demo/bootstrap/cache/
-composer.lock
-example/laravel-demo/app/
 example/laravel-demo/storage/
+example/laravel-demo/bootstrap/cache/
 example/laravel-demo/.env
-.phpunit.result.cache
-/vendor
-/example/laravel-demo/vendor
-/example/laravel-demo/storage
-/example/laravel-demo/bootstrap/cache
-/example/laravel-demo/.env
-composer.lock
-# ignore nextjs-dashboard is treated as a SUBMODULE (or separate repo)
 example/nextjs-dashboard/

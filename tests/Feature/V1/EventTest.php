@@ -21,9 +21,11 @@ use Illuminate\Support\Facades\Event;
 
 use Illuminate\Support\Facades\Notification;
 use ApurbaLabs\ApprovalEngine\Notifications\WorkflowBatchNotification;
+use ApurbaLabs\ApprovalEngine\Tests\Support\Traits\InteractsWithIAM;
 
 class EventTest extends TestCase
 {
+    use InteractsWithIAM;
     /** @test 
      * @group v1
     */
@@ -31,31 +33,38 @@ class EventTest extends TestCase
     {
         Notification::fake();
 
-        $user = Role::where('name', 'HOSD')->first()?->users()->first() ?? User::factory()->withRole('HOSD')->create();
+        $user = $this->createUserWithPermission('hosd');
 
         WorkflowSetting::factory()->create([
             'module' => 'requisition',
-            'role' => 'HOSD',
+            'role' => 'hosd',
             'frequency' => 'daily',
-            'send_time' => '00:00',
             'is_active' => 1,
+            'send_time' => '00:00:00',
+            'assign_type' => 'role',
+            'assign_value' => 'hosd',
         ]);
 
         $workflow = WorkflowInstance::factory()->create([
             'module' => 'requisition',
+            'status' => 'pending',
+            'current_stage_order'=>1,
             'payload' => [
                 'user_id' => $user->id
             ]
         ]);
 
-        WorkflowNotification::factory()->create([
+        WorkflowNotification::create([
             'workflow_instance_id' => $workflow->id,
+            'role' => 'hosd',
             'module' => 'requisition',
-            'role' => 'HOSD',
             'status' => 'pending',
+            'stage_order' => 1,
+            'assign_type' => 'role',
+            'assign_value' => 'hosd',
+            'recipient_signature' => 'role:hosd', 
             'recipient_id' => $user->id,
-            'recipient_type' => User::class,
-            'created_at' => now()->subMinutes(5),
+            'recipient_type' => get_class($user),
         ]);
 
         $this->artisan('approval:send-batch --force');

@@ -19,8 +19,14 @@ class WorkflowRuleResolver
         $rule = $this->findMatchingRule($workflow);
 
         if ($rule) {
-            return $this->stageNavigator
+            $stage = $this->stageNavigator
                 ->getStageByRole($module, $rule->role);
+                
+            if ($stage && $rule->assign_type && $rule->assign_value) {
+                $stage->resolved_assign_type = $rule->assign_type;
+                $stage->resolved_assign_value = $rule->assign_value;
+            }
+            return $stage;
         }
 
         return $this->stageNavigator->getNextStage(

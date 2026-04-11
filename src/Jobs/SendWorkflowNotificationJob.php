@@ -2,6 +2,7 @@
 
 namespace ApurbaLabs\ApprovalEngine\Jobs;
 
+use Exception;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Foundation\Queue\Queueable;
@@ -14,35 +15,32 @@ class SendWorkflowNotificationJob implements ShouldQueue
 {
     use Dispatchable, Queueable, SerializesModels;
 
-    /**
-     * Create a new job instance.
-     */
-    public function __construct(public WorkflowNotification $notification)
-    {
-        //
-    }
+    public function __construct(
+        public WorkflowNotification $notification
+    ) {}
 
-    /**
-     * Execute the job.
-     */
     public function handle(): void
     {
         try {
-            // Simulate send (email/sms later)
-            // TODO: integrate mail/notification channel
+            /**
+             * TODO:
+             * Replace with real mail / SMS / push dispatch later
+             */
 
             $this->notification->update([
                 'is_sent' => true,
                 'sent_at' => now(),
                 'status' => 'sent',
+                'next_retry_at' => null,
+                'error' => null,
             ]);
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
 
             app(WorkflowRetryService::class)
                 ->scheduleRetry($this->notification);
 
-            throw $e; // important for retry later
+            throw $e;
         }
     }
 }

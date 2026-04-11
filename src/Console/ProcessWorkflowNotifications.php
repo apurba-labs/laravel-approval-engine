@@ -9,37 +9,32 @@ use ApurbaLabs\ApprovalEngine\Services\WorkflowEscalationService;
 
 class ProcessWorkflowNotifications extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
     protected $signature = 'workflow:process-notifications';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Process retries and escalations';
+    protected $description = 'Process workflow notification retries and escalations';
 
-    /**
-     * Execute the console command.
-     */
-    public function handle()
+    public function handle(): int
     {
-        // Retry failed
-        WorkflowNotification::where('status', 'failed')
+        $retried = 0;
+
+        WorkflowNotification::query()
+            ->where('status', 'failed')
+            ->whereColumn('retry_count', '<', 'max_retries')
             ->whereNotNull('next_retry_at')
             ->where('next_retry_at', '<=', now())
-            ->each(function ($notification) {
+            ->each(function ($notification) use (&$retried) {
                 dispatch(new SendWorkflowNotificationJob($notification));
+
+                $retried++;
             });
 
-        // Escalation
-        app(WorkflowEscalationService::class)
+        $escalated = app(WorkflowEscalationService::class)
             ->processEscalations();
 
-        $this->info('Processed workflow notifications.');
+        $this->info(
+            "Processed workflow notifications. Retried: {$retried}, Escalated: {$escalated}"
+        );
+
+        return self::SUCCESS;
     }
 }

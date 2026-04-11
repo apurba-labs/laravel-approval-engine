@@ -6,12 +6,14 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Factories\Factory; 
+use ApurbaLabs\IAM\Contracts\Authorizable;
+use ApurbaLabs\IAM\Traits\HasRoles;
 
 use ApurbaLabs\ApprovalEngine\Tests\Support\Factories\UserFactory;
 
-class User extends Authenticatable
+class User extends Authenticatable implements Authorizable
 {
-    use Notifiable, HasFactory;
+    use Notifiable, HasFactory, HasRoles;
 
     protected $guarded = [];
     protected $table = 'users';
@@ -19,6 +21,15 @@ class User extends Authenticatable
     public function role()
     {
         return $this->belongsTo(Role::class, 'role_id');
+    }
+
+    /**
+     * Implementation of the Contract
+     * We wrap your service logic here
+     */
+    public function canIam(string $permission, $scopeId = null): bool
+    {
+        return app('iam')->can($this, $permission, $scopeId);
     }
 
     /**

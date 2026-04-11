@@ -1,26 +1,34 @@
 <?php
+
 namespace ApurbaLabs\ApprovalEngine\Support;
 
 use Illuminate\Support\Str;
 use ApurbaLabs\ApprovalEngine\Models\WorkflowBatch;
-use ApurbaLabs\ApprovalEngine\Events\BatchApproved;
+use ApurbaLabs\ApprovalEngine\Events\BatchSent;
 
 class BatchProcessor
 {
-    /**
-     * Create a new batch
-     */
     public function createBatch(
         string $module,
-        string $role,
+        string $recipientSignature,
         $start,
-        $end
+        $end,
+        ?string $role = null,
+        ?string $assignType = null,
+        ?string $assignValue = null
     ): WorkflowBatch {
-
         return WorkflowBatch::create([
             'module' => $module,
+
+            // Legacy
             'role' => $role,
-            'token' => Str::uuid(),
+
+            // Snapshot
+            'assign_type' => $assignType,
+            'assign_value' => $assignValue,
+            'recipient_signature' => $recipientSignature,
+
+            'token' => WorkflowBatch::generateToken(),
             'window_start' => $start,
             'window_end' => $end,
             'status' => 'pending',
@@ -28,9 +36,6 @@ class BatchProcessor
         ]);
     }
 
-    /**
-     * Mark batch as sent
-     */
     public function markSent(WorkflowBatch $batch, int $count): void
     {
         $batch->update([
@@ -39,12 +44,9 @@ class BatchProcessor
             'sent_at' => now(),
         ]);
 
-        event(new BatchApproved($batch));
+        event(new BatchSent($batch));
     }
 
-    /**
-     * Mark batch as failed
-     */
     public function markFailed(WorkflowBatch $batch, string $error = null): void
     {
         $batch->update([
@@ -54,11 +56,15 @@ class BatchProcessor
         \Log::error("Batch {$batch->id} failed: " . $error);
     }
 
-    public function findExistingBatch($module, $role, $start, $end)
-    {
+    public function findExistingBatch(
+        string $module,
+        string $recipientSignature,
+        $start,
+        $end
+    ) {
         return WorkflowBatch::where([
             'module' => $module,
-            'role' => $role,
+            'recipient_signature' => $recipientSignature,
             'window_start' => $start,
             'window_end' => $end,
         ])->first();
