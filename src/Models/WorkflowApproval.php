@@ -33,6 +33,17 @@ class WorkflowApproval extends Model
 
     public function workflowInstance(): BelongsTo
     {
-        return $this->belongsTo(WorkflowInstance::class);
+        return $this->belongsTo(
+            WorkflowInstance::class,
+            'workflow_instance_id'
+        );
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(
+            config('auth.providers.users.model'),
+            'user_id'
+        );
     }
 }
