@@ -55,6 +55,63 @@ In most enterprise systems:
 
 ---
 
+## Engineering Philosophy
+
+This package is built on a simple belief:
+
+> **Workflow logic should not live inside controllers or models.**
+
+Modern systems require:
+- Separation of concerns
+- Scalable architecture
+- Configurable business logic
+
+Instead of hardcoding approval flows, this engine provides:
+
+- ✅ **Modular workflow design** (plug & play modules)
+- ✅ **Headless architecture** (UI-agnostic, API-first)
+- ✅ **Database-driven configuration** (no redeploy needed)
+- ✅ **IAM-based authorization** (not role hardcoding)
+
+This allows teams to evolve workflows without rewriting core logic.
+
+---
+## Architectural Maturity
+
+The PHP ecosystem is evolving beyond framework defaults toward **clean, scalable architecture**.
+
+Recent industry trends emphasize:
+
+- Moving from **fat controllers → Action & DTO-based architecture**
+- Designing **configurable, database-driven systems**
+- Building **enterprise-grade workflow engines and scoring systems**
+- Reducing dependency on external SaaS by building **in-house solutions**
+- Improving **observability, auditability, and system transparency**
+
+At Apurba Labs, this is not a trend — it’s the foundation.
+
+Our systems are designed to:
+- Be **modular and extensible**
+- Support **complex business logic (workflows, approvals, IAM)**
+- Operate in **high-scale, event-driven environments**
+- Remain **framework-agnostic and future-proof**
+
+---
+
+## How This Project Aligns
+
+Laravel Approval Engine is built following modern architectural principles:
+
+- ✅ Action-driven workflow execution (no fat controllers)
+- ✅ IAM-based authorization (permission-first, not role-only)
+- ✅ Modular workflow modules (plug & play architecture)
+- ✅ Database-driven workflow configuration
+- ✅ Full auditability of approval lifecycle
+- ✅ Batch-based processing for high-volume systems
+
+This makes the engine suitable for **enterprise-grade applications and SaaS platforms**.
+
+---
 ## Example Use Cases
 
 - 🧾 Requisition Approval (HOS → COO)  
