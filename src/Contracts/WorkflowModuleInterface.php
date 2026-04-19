@@ -24,7 +24,7 @@ interface WorkflowModuleInterface
      * Get workflow settings for the module.
      * 
      * @param string|null $role
-     * @return \Illuminate\Support\Collection|\ApurbaLabs\ApprovalEngine\Models\WorkflowSetting|null
+     * @return \Illuminate\Support\Collection|\ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowSetting|null
      */
     public function getSettings(?string $role = null);
 

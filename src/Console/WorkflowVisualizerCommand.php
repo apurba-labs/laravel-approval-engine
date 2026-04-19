@@ -3,7 +3,7 @@
 namespace ApurbaLabs\ApprovalEngine\Console;
 
 use Illuminate\Console\Command;
-use ApurbaLabs\ApprovalEngine\Models\WorkflowStage;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowStage;
 
 class WorkflowVisualizerCommand extends Command
 {

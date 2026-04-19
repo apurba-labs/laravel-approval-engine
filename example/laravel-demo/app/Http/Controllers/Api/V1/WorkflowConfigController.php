@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller; 
 
 use Illuminate\Http\Request;
-use ApurbaLabs\ApprovalEngine\Models\WorkflowStage;
-use ApurbaLabs\ApprovalEngine\Models\WorkflowRule;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowStage;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowRule;
 
 class WorkflowConfigController extends Controller
 {

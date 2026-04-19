@@ -3,8 +3,8 @@
 namespace ApurbaLabs\ApprovalEngine\Tests\Feature\V1;
 
 use ApurbaLabs\ApprovalEngine\Tests\TestCase;
-use ApurbaLabs\ApprovalEngine\Models\WorkflowBatch;
-use ApurbaLabs\ApprovalEngine\Models\WorkflowStage;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowBatch;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowStage;
 use Illuminate\Support\Facades\Schema;
 
 class BatchCreationTest extends TestCase

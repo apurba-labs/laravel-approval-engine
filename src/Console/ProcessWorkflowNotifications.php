@@ -4,8 +4,8 @@ namespace ApurbaLabs\ApprovalEngine\Console;
 
 use Illuminate\Console\Command;
 use ApurbaLabs\ApprovalEngine\Jobs\SendWorkflowNotificationJob;
-use ApurbaLabs\ApprovalEngine\Models\WorkflowNotification;
-use ApurbaLabs\ApprovalEngine\Services\WorkflowEscalationService;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowNotification;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Services\WorkflowEscalationService;
 
 class ProcessWorkflowNotifications extends Command
 {

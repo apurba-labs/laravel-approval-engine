@@ -2,7 +2,7 @@
 
 namespace ApurbaLabs\ApprovalEngine\Services;
 
-use ApurbaLabs\ApprovalEngine\Models\WorkflowNotification;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowNotification;
 
 class WorkflowNotificationDispatcher
 {

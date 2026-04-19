@@ -2,15 +2,15 @@
 
 namespace ApurbaLabs\ApprovalEngine\Listeners;
 
-use ApurbaLabs\ApprovalEngine\Events\BatchApproved;
+use ApurbaLabs\ApprovalEngine\Events\WorkflowBatchApproved;
 use ApurbaLabs\ApprovalEngine\Services\NotificationService;
-use ApurbaLabs\ApprovalEngine\Models\WorkflowNotification;
-use ApurbaLabs\ApprovalEngine\Models\WorkflowLog;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowNotification;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowLog;
 use Illuminate\Support\Facades\Log;
 
 class HandleBatchApproved
 {
-    public function handle(BatchApproved $event)
+    public function handle(WorkflowBatchApproved $event)
     {
         $batch = $event->batch;
 

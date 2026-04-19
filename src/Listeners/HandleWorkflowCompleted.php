@@ -3,24 +3,29 @@
 namespace ApurbaLabs\ApprovalEngine\Listeners;
 
 use ApurbaLabs\ApprovalEngine\Events\WorkflowCompleted;
-use ApurbaLabs\ApprovalEngine\Models\WorkflowLog;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowLog;
 use Illuminate\Support\Facades\Log;
 
 class HandleWorkflowCompleted
 {
     public function handle(WorkflowCompleted $event)
     {
-        $batch = $event->batch;
+        $workflow = $event->workflow; 
 
-        // TIMELINE LOG ONLY
+        if (!$workflow || !$workflow->id) {
+            Log::error('Invalid workflow in WorkflowCompleted event');
+            return;
+        }
+
+        // Timeline log
         WorkflowLog::create([
-            'workflow_instance_id' => $batch->workflow_instance_id,
-            'module' => $batch->module,
+            'workflow_instance_id' => $workflow->id,
+            'module' => $workflow->module,
             'role' => 'completed',
-            'stage_order' => $batch->stage,
+            'stage_order' => $workflow->current_stage_order,
             'entered_at' => now(),
         ]);
 
-        Log::info("Workflow COMPLETED: Batch #{$batch->id}");
+        Log::info("Workflow COMPLETED: Workflow #{$workflow->id}");
     }
 }

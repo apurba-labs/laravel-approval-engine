@@ -4,27 +4,13 @@ namespace ApurbaLabs\ApprovalEngine\Events;
 
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
-use App\Models\WorkflowBatch;
-use Illuminate\Support\Collection;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowInstance;
 
 class WorkflowStarted
 {
-    protected Collection $workflows;
+    use Dispatchable, SerializesModels;
 
-    public function __construct($workflows)
-    {
-        // Normalize input
-        if ($workflows instanceof Collection) {
-            $this->workflows = $workflows;
-        } else {
-            $this->workflows = collect([$workflows]);
-        }
-    }
-
-    public function workflows(): Collection
-    {
-        return collect($this->workflows)->map(function ($workflow) {
-            return is_object($workflow) ? $workflow : \ApurbaLabs\ApprovalEngine\Models\WorkflowInstance::find($workflow);
-        });
-    }
+    public function __construct(
+        public WorkflowInstance $workflow
+    ) {}
 }

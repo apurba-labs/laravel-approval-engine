@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Route;
 
 use ApurbaLabs\ApprovalEngine\Providers\EventServiceProvider as PackageEventServiceProvider;
 use ApurbaLabs\IAM\Providers\IAMServiceProvider;
+use ApurbaLabs\ApprovalEngine\Services\WorkflowManager;
 
 use ApurbaLabs\ApprovalEngine\Console\InstallCommand;
 use ApurbaLabs\ApprovalEngine\Console\SendWorkflowBatchCommand;
@@ -16,6 +17,10 @@ use ApurbaLabs\ApprovalEngine\Console\WorkflowVisualizerCommand;
 use ApurbaLabs\ApprovalEngine\Console\BatchStatusCommand;
 use ApurbaLabs\ApprovalEngine\Console\SetupApprovalDemo;
 use ApurbaLabs\ApprovalEngine\Console\ProcessWorkflowNotifications;
+use ApurbaLabs\ApprovalEngine\Services\PluginManager;
+
+use ApurbaLabs\ApprovalEngine\Contracts\NotificationInterface;
+use ApurbaLabs\ApprovalEngine\Services\NotificationService;
 
 class ApprovalEngineServiceProvider extends ServiceProvider
 {
@@ -44,6 +49,16 @@ class ApprovalEngineServiceProvider extends ServiceProvider
         //], 'approval-seeders');
 
         $this->loadRoutesFrom(__DIR__.'/../routes/approval.php');
+
+        $plugins = config('approval-engine.plugins', []);
+
+        $manager = app(PluginManager::class);
+
+        foreach ($plugins as $pluginClass) {
+            $manager->register(app($pluginClass));
+        }
+
+        $manager->boot();
     }
 
     public function register()
@@ -52,6 +67,13 @@ class ApprovalEngineServiceProvider extends ServiceProvider
         $this->app->register(PackageEventServiceProvider::class);
         $this->app->register(IAMServiceProvider::class);
 
+        $this->app->singleton(WorkflowManager::class);
+        $this->app->singleton(PluginManager::class);
+
+        $this->app->bind(
+            NotificationInterface::class,
+            NotificationService::class
+        );
         
         $this->commands([
             InstallCommand::class,

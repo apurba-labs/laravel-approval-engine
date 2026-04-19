@@ -3,10 +3,13 @@
 namespace ApurbaLabs\ApprovalEngine\Tests\Support\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Factories\Factory; 
 use ApurbaLabs\IAM\Contracts\Authorizable;
+
+use ApurbaLabs\IAM\Models\Role;
 use ApurbaLabs\IAM\Traits\HasRoles;
 
 use ApurbaLabs\ApprovalEngine\Tests\Support\Factories\UserFactory;
@@ -18,9 +21,9 @@ class User extends Authenticatable implements Authorizable
     protected $guarded = [];
     protected $table = 'users';
 
-    public function role()
+    public function role(): BelongsToMany
     {
-        return $this->belongsTo(Role::class, 'role_id');
+        return $this->belongsToMany(Role::class, 'iam_role_user');
     }
 
     /**

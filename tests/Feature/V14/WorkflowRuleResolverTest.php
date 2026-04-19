@@ -4,8 +4,8 @@ namespace ApurbaLabs\ApprovalEngine\Tests\Feature\V14;
 
 use ApurbaLabs\ApprovalEngine\Tests\TestCase;
 
-use ApurbaLabs\ApprovalEngine\Models\WorkflowRule;
-use ApurbaLabs\ApprovalEngine\Models\WorkflowInstance;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowRule;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowInstance;
 use ApurbaLabs\ApprovalEngine\Engine\Resolvers\WorkflowRuleResolver;
 
 class WorkflowRuleResolverTest extends TestCase

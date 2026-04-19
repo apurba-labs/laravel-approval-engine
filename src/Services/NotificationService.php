@@ -2,20 +2,20 @@
 
 namespace ApurbaLabs\ApprovalEngine\Services;
 
+use ApurbaLabs\ApprovalEngine\Contracts\NotificationInterface;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Collection;
-use ApurbaLabs\ApprovalEngine\Models\WorkflowNotification;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowNotification;
 use ApurbaLabs\ApprovalEngine\Notifications\WorkflowBatchNotification;
 use ApurbaLabs\ApprovalEngine\Notifications\WorkflowSingleNotification;
+use ApurbaLabs\ApprovalEngine\Services\WorkflowNotificationDispatcher;
 
-/**
- * Legacy methods (v1.3)
- * These will be refactored or removed in future versions.
- * New flow uses: createNotification() + dispatch()
- */
-class NotificationService
+class NotificationService implements NotificationInterface
 {
+    /**
+     * Create notification record
+     */
     public function createNotification(
         $workflow,
         $stage,
@@ -23,40 +23,33 @@ class NotificationService
         ?string $assignType = null,
         ?string $assignValue = null
     ): WorkflowNotification {
-        $assignType ??= $stage->resolved_assign_type
-            ?? $stage->assign_type
-            ?? 'role';
 
-        $assignValue ??= $stage->resolved_assign_value
-            ?? $stage->assign_value
-            ?? $stage->role;
+        [$assignType, $assignValue] = $this->resolveAssignment(
+            $stage,
+            $assignType,
+            $assignValue
+        );
 
         return WorkflowNotification::create([
             'workflow_instance_id' => $workflow->id,
             'module' => $workflow->module,
 
-            // Legacy / display
             'role' => $stage->role,
 
-            // Stage snapshot
             'stage_id' => $stage->id,
             'stage_order' => $stage->stage_order,
 
-            // Assignment snapshot
             'assign_type' => $assignType,
             'assign_value' => $assignValue,
 
-            // Deterministic grouping/auth key
             'recipient_signature' => $this->buildRecipientSignature(
                 $assignType,
                 $assignValue
             ),
 
-            // Intended recipient
             'recipient_id' => $recipient?->id,
             'recipient_type' => $recipient ? get_class($recipient) : null,
 
-            // Actual resolved recipient
             'resolved_recipient_id' => $recipient?->id,
             'resolved_recipient_type' => $recipient ? get_class($recipient) : null,
 
@@ -69,23 +62,16 @@ class NotificationService
         ]);
     }
 
-    protected function buildRecipientSignature(string $assignType, string $assignValue, $scopeId = null): string 
-    {
-        return collect([
-            $assignType,
-            $assignValue,
-            $scopeId ? "scope:{$scopeId}" : null,
-        ])->filter()->implode(':');
-    }
-
+    /**
+     * Dispatch notification (queue or handler)
+     */
     public function dispatch(WorkflowNotification $notification): void
     {
-        app(WorkflowNotificationDispatcher::class)
-            ->dispatch($notification);
+        app(WorkflowNotificationDispatcher::class)->dispatch($notification);
     }
 
     /**
-     * Send immediately if setting is 'instant'
+     * Send immediately if needed
      */
     public function sendImmediateIfNeeded(WorkflowNotification $notification): void
     {
@@ -99,7 +85,7 @@ class NotificationService
     }
 
     /**
-     * Send a single notification (instant mode)
+     * Send single notification
      */
     public function sendSingle(WorkflowNotification $notification): void
     {
@@ -107,19 +93,19 @@ class NotificationService
             $recipient = $notification->recipient;
 
             if (!$recipient) {
-                Log::warning("No recipient for notification {$notification->id}");
+                Log::warning("No recipient for notification", [
+                    'notification_id' => $notification->id,
+                    'workflow_id' => $notification->workflow_instance_id,
+                ]);
                 return;
             }
 
-            Notification::send(
+            $this->sendViaLaravel(
                 $recipient,
                 new WorkflowSingleNotification($notification)
             );
 
-            $notification->update([
-                'status'  => 'sent',
-                'sent_at' => now(),
-            ]);
+            $this->markSent($notification);
 
         } catch (\Throwable $e) {
             $this->markFailed($notification, $e);
@@ -127,11 +113,10 @@ class NotificationService
     }
 
     /**
-     * Send batch notifications (grouped)
+     * Send batch notifications
      */
     public function sendBatch($batch, Collection $notifications): void
     {
-        // recipients (models, not emails)
         $recipients = $this->resolveBatchRecipients($notifications);
 
         if ($recipients->isEmpty()) {
@@ -140,63 +125,143 @@ class NotificationService
         }
 
         try {
-            Notification::send(
+            $this->sendViaLaravel(
                 $recipients,
                 new WorkflowBatchNotification($batch, $notifications)
             );
 
-            // mark all as sent
-            WorkflowNotification::whereIn('id', $notifications->pluck('id'))
-                ->update([
-                    'status'  => 'sent',
-                    'sent_at' => now(),
-                ]);
+            $this->markBatchSent($notifications);
 
         } catch (\Throwable $e) {
+            $this->markBatchFailed($notifications, $e);
 
-            // mark all as failed
-            WorkflowNotification::whereIn('id', $notifications->pluck('id'))
-                ->update([
-                    'status' => 'failed',
-                    'error'  => $e->getMessage(),
-                ]);
-
-            Log::error("Batch send failed: " . $e->getMessage());
+            Log::error("Batch send failed", [
+                'batch_id' => $batch->id,
+                'error' => $e->getMessage(),
+            ]);
         }
     }
 
     /**
-     * Resolve recipients from notifications (polymorphic)
+     * Laravel Notification wrapper (future plugin point)
      */
-    protected function resolveBatchRecipients(Collection $notifications): Collection
+    protected function sendViaLaravel($recipient, $notification): void
     {
-        return $notifications
-            ->map(fn ($n) => $n->recipient)   // MorphTo relation
-            ->filter()                       // remove null
-            ->unique(fn ($model) => get_class($model) . ':' . $model->getKey())
-            ->values();
+        Notification::send($recipient, $notification);
     }
 
     /**
-     * Fetch setting (used for instant logic)
+     * Mark single notification sent
      */
-    protected function getSetting(WorkflowNotification $notification)
+    protected function markSent(WorkflowNotification $notification): void
     {
-        return \ApurbaLabs\ApprovalEngine\Models\WorkflowSetting::where('module', $notification->module)
-            ->where('role', $notification->role)
-            ->first();
+        $notification->update([
+            'status'  => 'sent',
+            'sent_at' => now(),
+        ]);
     }
 
     /**
-     * Mark single notification failed
+     * Mark batch sent
+     */
+    protected function markBatchSent(Collection $notifications): void
+    {
+        $notifications->chunk(100)->each(function ($chunk) {
+            WorkflowNotification::whereIn('id', $chunk->pluck('id'))
+                ->update([
+                    'status'  => 'sent',
+                    'sent_at' => now(),
+                ]);
+        });
+    }
+
+    /**
+     * Mark batch failed
+     */
+    protected function markBatchFailed(Collection $notifications, \Throwable $e): void
+    {
+        $notifications->chunk(100)->each(function ($chunk) use ($e) {
+            WorkflowNotification::whereIn('id', $chunk->pluck('id'))
+                ->update([
+                    'status' => 'failed',
+                    'error'  => $e->getMessage(),
+                ]);
+        });
+    }
+
+    /**
+     * Mark single failed with retry support
      */
     protected function markFailed(WorkflowNotification $notification, \Throwable $e): void
     {
+        $notification->increment('retry_count');
+
         $notification->update([
             'status' => 'failed',
             'error'  => $e->getMessage(),
         ]);
 
-        Log::error("Notification {$notification->id} failed: " . $e->getMessage());
+        Log::error("Notification failed", [
+            'notification_id' => $notification->id,
+            'error' => $e->getMessage(),
+        ]);
+    }
+
+    /**
+     * Resolve assignment logic
+     */
+    protected function resolveAssignment($stage, $assignType, $assignValue): array
+    {
+        return [
+            $assignType ?? $stage->resolved_assign_type ?? $stage->assign_type ?? 'role',
+            $assignValue ?? $stage->resolved_assign_value ?? $stage->assign_value ?? $stage->role,
+        ];
+    }
+
+    /**
+     * Build recipient signature
+     */
+    protected function buildRecipientSignature(string $assignType, string $assignValue, $scopeId = null): string
+    {
+        return collect([
+            $assignType,
+            $assignValue,
+            $scopeId ? "scope:{$scopeId}" : null,
+        ])->filter()->implode(':');
+    }
+
+    /**
+     * Resolve recipients for batch
+     */
+    protected function resolveBatchRecipients(Collection $notifications): Collection
+    {
+        return $notifications
+            ->map(fn ($n) => $n->recipient)
+            ->filter()
+            ->unique(fn ($model) => get_class($model) . ':' . $model->getKey())
+            ->values();
+    }
+
+    /**
+     * Get notification setting (cached)
+     */
+    protected function getSetting(WorkflowNotification $notification)
+    {
+        return cache()->remember(
+            "workflow_setting:{$notification->module}:{$notification->role}",
+            now()->addMinutes(10),
+            fn() => \ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowSetting::where('module', $notification->module)
+                ->where('role', $notification->role)
+                ->first()
+        );
+    }
+
+    /**
+     * Helper: dispatch + immediate send
+     */
+    public function dispatchAndMaybeSend(WorkflowNotification $notification): void
+    {
+        $this->dispatch($notification);
+        $this->sendImmediateIfNeeded($notification);
     }
 }

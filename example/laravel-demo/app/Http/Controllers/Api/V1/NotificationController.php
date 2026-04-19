@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use ApurbaLabs\ApprovalEngine\ApprovalEngine;
-use ApurbaLabs\ApprovalEngine\Models\WorkflowInstance;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowInstance;
 
 class NotificationController extends Controller
 {

@@ -2,7 +2,7 @@
 
 namespace ApurbaLabs\ApprovalEngine\Database\Factories;
 
-use ApurbaLabs\ApprovalEngine\Models\WorkflowLog;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowLog;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

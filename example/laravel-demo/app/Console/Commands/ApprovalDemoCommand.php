@@ -7,7 +7,7 @@ use App\Models\Requisition;
 use App\Models\User; 
 use ApurbaLabs\ApprovalEngine\Engine\WorkflowEngine;
 use ApurbaLabs\ApprovalEngine\Support\BatchProcessor;
-use ApurbaLabs\ApprovalEngine\Enums\WorkflowStatus;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Enums\WorkflowStatus;
 use Carbon\Carbon;
 
 class ApprovalDemoCommand extends Command

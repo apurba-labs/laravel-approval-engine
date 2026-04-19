@@ -2,7 +2,7 @@
 namespace ApurbaLabs\ApprovalEngine\Engine\Resolvers;
 
 use Illuminate\Support\Facades\Cache;
-use ApurbaLabs\ApprovalEngine\Models\WorkflowRule;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowRule;
 use ApurbaLabs\ApprovalEngine\Support\StageNavigator;
 
 /**

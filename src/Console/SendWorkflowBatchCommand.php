@@ -3,33 +3,37 @@
 namespace ApurbaLabs\ApprovalEngine\Console;
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 use ApurbaLabs\ApprovalEngine\Support\BatchProcessor;
 use ApurbaLabs\ApprovalEngine\Support\BatchWindowResolver;
-use ApurbaLabs\ApprovalEngine\Models\WorkflowSetting;
-use ApurbaLabs\ApprovalEngine\Models\WorkflowNotification;
-use ApurbaLabs\ApprovalEngine\Services\NotificationService;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowSetting;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowNotification;
+use ApurbaLabs\ApprovalEngine\Contracts\NotificationInterface;
 
 class SendWorkflowBatchCommand extends Command
 {
     protected $signature = 'approval:send-batch {--force}';
-
     protected $description = 'Process workflow approval batches';
 
     public function handle()
     {
         $processor = app(BatchProcessor::class);
         $windowResolver = app(BatchWindowResolver::class);
-        $notificationService = app(NotificationService::class);
+        $notificationService = app(NotificationInterface::class);
 
         $pendingNotifications = WorkflowNotification::query()
             ->where('status', 'pending')
             ->whereNull('batch_id')
             ->get()
-            ->groupBy(fn ($notification) =>
-                $notification->module . '|' . $notification->recipient_signature
-            );
+            ->groupBy(fn ($n) => implode('|', [
+                $n->module,
+                $n->recipient_signature,
+                $n->role,
+                $n->assign_type,
+                $n->assign_value,
+            ]));
 
         if ($pendingNotifications->isEmpty()) {
             $this->info('No pending notifications found.');
@@ -39,6 +43,11 @@ class SendWorkflowBatchCommand extends Command
         foreach ($pendingNotifications as $groupKey => $notifications) {
 
             $first = $notifications->first();
+
+            if (!$first->recipient_signature) {
+                $this->warn("Skipping group without recipient signature: {$groupKey}");
+                continue;
+            }
 
             $setting = $this->resolveSetting($first);
 
@@ -52,15 +61,10 @@ class SendWorkflowBatchCommand extends Command
             }
 
             $window = $windowResolver->resolve($setting);
-
             $start = $window['start'];
             $end = $window['end'];
 
-            if (!$first->recipient_signature) {
-                $this->warn("Skipping notification group without recipient signature.");
-                continue;
-            }
-
+            // 🔥 prevent duplicate batch
             $existing = $processor->findExistingBatch(
                 $first->module,
                 $first->recipient_signature,
@@ -72,30 +76,47 @@ class SendWorkflowBatchCommand extends Command
                 continue;
             }
 
-            $batch = $processor->createBatch(
-                module: $first->module,
-                recipientSignature: $first->recipient_signature,
-                start: $start,
-                end: $end,
-                role: $first->role,
-                assignType: $first->assign_type,
-                assignValue: $first->assign_value
-            );
+            // 🔥 CREATE BATCH + ASSIGN IN TRANSACTION
+            $batch = DB::transaction(function () use ($processor, $first, $notifications, $start, $end) {
 
-            WorkflowNotification::whereIn('id', $notifications->pluck('id'))
-                ->update([
-                    'batch_id' => $batch->id,
+                $batch = $processor->createBatch(
+                    module: $first->module,
+                    recipientSignature: $first->recipient_signature,
+                    start: $start,
+                    end: $end,
+                    role: $first->role,
+                    assignType: $first->assign_type,
+                    assignValue: $first->assign_value
+                );
+
+                WorkflowNotification::whereIn('id', $notifications->pluck('id'))
+                    ->update([
+                        'batch_id' => $batch->id,
+                    ]);
+
+                return $batch;
+            });
+
+            try {
+                // SEND AFTER COMMIT
+                $notificationService->sendBatch($batch, $notifications);
+
+                $processor->markSent($batch, $notifications->count());
+
+                $setting->update([
+                    'last_run_at' => now(),
                 ]);
 
-            $notificationService->sendBatch($batch, $notifications);
+                $this->info("Batch sent for {$groupKey}");
 
-            $processor->markSent($batch, $notifications->count());
+            } catch (\Throwable $e) {
 
-            $setting->update([
-                'last_run_at' => now(),
-            ]);
+                $this->error("Batch failed for {$groupKey}: " . $e->getMessage());
 
-            $this->info("Batch sent for {$groupKey}");
+                if (method_exists($processor, 'markFailed')) {
+                    $processor->markFailed($batch, $e->getMessage());
+                }
+            }
         }
 
         return Command::SUCCESS;
@@ -121,7 +142,6 @@ class SendWorkflowBatchCommand extends Command
         }
 
         $timezone = $setting->timezone ?? config('app.timezone');
-
         $now = now()->timezone($timezone);
 
         if ($setting->last_run_at) {

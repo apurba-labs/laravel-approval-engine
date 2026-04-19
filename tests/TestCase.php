@@ -57,6 +57,7 @@ abstract class TestCase extends BaseTestCase
      * Automatically seed each test with this seeder.
      * @return array<int,string>
      */
+    /*
     protected function defineDatabaseSeeders()
     {
         return [
@@ -70,6 +71,14 @@ abstract class TestCase extends BaseTestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        \Illuminate\Support\Facades\Cache::flush();
+
+        \DB::listen(function ($query) {
+            if (str_contains($query->sql, 'roles')) {
+                fwrite(STDOUT, $query->sql . PHP_EOL);
+            }
+        });
     }
 
     protected function tearDown(): void

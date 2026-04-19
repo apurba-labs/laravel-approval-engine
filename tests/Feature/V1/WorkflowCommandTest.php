@@ -7,16 +7,16 @@ use ApurbaLabs\ApprovalEngine\Tests\TestCase;
 use ApurbaLabs\ApprovalEngine\Database\Seeders\WorkflowDatabaseSeeder;
 use ApurbaLabs\ApprovalEngine\Engine\WorkflowEngine;
 use ApurbaLabs\ApprovalEngine\Contracts\WorkflowModuleInterface;
-use ApurbaLabs\ApprovalEngine\Enums\WorkflowStatus;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Enums\WorkflowStatus;
 
 
-use ApurbaLabs\ApprovalEngine\Models\WorkflowBatch;
-use ApurbaLabs\ApprovalEngine\Models\WorkflowSetting;
-use ApurbaLabs\ApprovalEngine\Models\WorkflowNotification;
-use ApurbaLabs\ApprovalEngine\Models\WorkflowInstance;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowBatch;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowSetting;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowNotification;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowInstance;
 
 use ApurbaLabs\ApprovalEngine\Tests\Support\Models\User;
-use ApurbaLabs\ApprovalEngine\Tests\Support\Models\Role;
+use ApurbaLabs\IAM\Models\Role;
 use ApurbaLabs\ApprovalEngine\Tests\Support\Models\Requisition;
 
 use ApurbaLabs\ApprovalEngine\Tests\Support\Modules\RequisitionModule;

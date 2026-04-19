@@ -1,8 +1,10 @@
 <?php
 namespace ApurbaLabs\ApprovalEngine\Tests\Support\Factories;
 
-use ApurbaLabs\ApprovalEngine\Tests\Support\Models\Role;
+use ApurbaLabs\IAM\Models\Role;
 use Illuminate\Database\Eloquent\Factories\Factory;
+
+use ApurbaLabs\IAM\Models\Role;
 
 class RoleFactory extends Factory
 {

@@ -3,7 +3,7 @@ namespace ApurbaLabs\ApprovalEngine\Tests\Support\Factories;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 use ApurbaLabs\ApprovalEngine\Tests\Support\Models\User;
-use ApurbaLabs\ApprovalEngine\Tests\Support\Models\Role;
+use ApurbaLabs\IAM\Models\Role;
 
 class UserFactory extends Factory
 {

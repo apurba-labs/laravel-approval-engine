@@ -4,16 +4,13 @@ namespace ApurbaLabs\ApprovalEngine\Events;
 
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
-use ApurbaLabs\ApprovalEngine\Models\WorkflowBatch;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowInstance;
 
 class WorkflowCompleted
 {
-    use SerializesModels;
+    use Dispatchable, SerializesModels;
 
-    public $batch;
-
-    public function __construct(WorkflowBatch $batch)
-    {
-        $this->batch = $batch;
-    }
+    public function __construct(
+        public WorkflowInstance $workflow 
+    ) {}
 }

@@ -5,7 +5,7 @@ use ApurbaLabs\ApprovalEngine\Tests\TestCase;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
 
-use ApurbaLabs\ApprovalEngine\Models\{WorkflowRule, WorkflowInstance, WorkflowLog, WorkflowNotification, WorkflowSetting, WorkflowStage};
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\{WorkflowRule, WorkflowInstance, WorkflowLog, WorkflowNotification, WorkflowSetting, WorkflowStage};
 use ApurbaLabs\ApprovalEngine\Tests\Support\Models\User;
 use ApurbaLabs\IAM\Models\Role;
 use ApurbaLabs\IAM\Models\Permission;

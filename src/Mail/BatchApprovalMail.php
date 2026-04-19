@@ -10,7 +10,7 @@ use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Database\Eloquent\Collection;
 
-use ApurbaLabs\ApprovalEngine\Models\WorkflowBatch;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowBatch;
 
 
 class BatchApprovalMail extends Mailable

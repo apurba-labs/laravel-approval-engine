@@ -3,7 +3,7 @@
 namespace ApurbaLabs\ApprovalEngine\Support;
 
 use Illuminate\Support\Str;
-use ApurbaLabs\ApprovalEngine\Models\WorkflowBatch;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowBatch;
 use ApurbaLabs\ApprovalEngine\Events\BatchSent;
 
 class BatchProcessor
@@ -44,7 +44,7 @@ class BatchProcessor
             'sent_at' => now(),
         ]);
 
-        event(new BatchSent($batch));
+        event(new WorkflowBatchSent($batch));
     }
 
     public function markFailed(WorkflowBatch $batch, string $error = null): void

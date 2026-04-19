@@ -24,7 +24,7 @@ abstract class BaseWorkflowModule implements WorkflowModuleInterface
      */
     public function getSettings($role = null)
     {
-        $query = \ApurbaLabs\ApprovalEngine\Models\WorkflowSetting::where('module', $this->name())
+        $query = \ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowSetting::where('module', $this->name())
             ->where('is_active', true);
 
         if ($role) {

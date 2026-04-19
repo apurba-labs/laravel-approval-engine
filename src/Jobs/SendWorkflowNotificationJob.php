@@ -8,7 +8,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\SerializesModels;
 
-use ApurbaLabs\ApprovalEngine\Models\WorkflowNotification;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowNotification;
 use ApurbaLabs\ApprovalEngine\Services\WorkflowRetryService;
 
 class SendWorkflowNotificationJob implements ShouldQueue

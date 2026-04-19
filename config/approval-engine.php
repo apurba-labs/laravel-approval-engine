@@ -13,6 +13,10 @@ return [
             'slack' => false,
         ],
     ],
-
-
+    'plugins' => [
+        // App\Plugins\SlackNotificationPlugin::class,
+    ],
+    'user_resolver' => null,
+    'context_resolver' => null,
+    'notification' => null,
 ];

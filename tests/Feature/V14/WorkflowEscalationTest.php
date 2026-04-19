@@ -5,9 +5,9 @@ namespace ApurbaLabs\ApprovalEngine\Tests\Feature\V14;
 use ApurbaLabs\ApprovalEngine\Tests\TestCase;
 use Carbon\Carbon;
 
-use ApurbaLabs\ApprovalEngine\Models\WorkflowApproval;
-use ApurbaLabs\ApprovalEngine\Models\WorkflowInstance;
-use ApurbaLabs\ApprovalEngine\Models\WorkflowNotification;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowApproval;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowInstance;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowNotification;
 
 use ApurbaLabs\ApprovalEngine\Tests\Support\Traits\InteractsWithIAM;
 

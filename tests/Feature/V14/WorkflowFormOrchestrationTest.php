@@ -6,11 +6,11 @@ use Illuminate\Support\Facades\Notification;
 
 use ApurbaLabs\ApprovalEngine\Domains\WorkflowForm\Models\WorkflowForm;
 use ApurbaLabs\ApprovalEngine\Domains\WorkflowForm\Models\WorkflowModule;
-use ApurbaLabs\ApprovalEngine\Models\WorkflowRule;
-use ApurbaLabs\ApprovalEngine\Models\WorkflowInstance;
-use ApurbaLabs\ApprovalEngine\Models\WorkflowApproval;
-use ApurbaLabs\ApprovalEngine\Models\WorkflowStage;
-use ApurbaLabs\ApprovalEngine\Models\WorkflowSetting;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowRule;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowInstance;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowApproval;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowStage;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowSetting;
 
 
 

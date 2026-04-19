@@ -2,7 +2,7 @@
 
 namespace ApurbaLabs\ApprovalEngine\Database\Factories;
 
-use ApurbaLabs\ApprovalEngine\Models\WorkflowRule;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowRule;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

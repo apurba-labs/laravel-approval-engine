@@ -4,8 +4,8 @@ namespace ApurbaLabs\ApprovalEngine\Console;
 
 use Illuminate\Console\Command;
 
-use ApurbaLabs\ApprovalEngine\Models\WorkflowStage;
-use ApurbaLabs\ApprovalEngine\Models\WorkflowRule;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowStage;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowRule;
 
 class SetupApprovalDemo extends Command
 {

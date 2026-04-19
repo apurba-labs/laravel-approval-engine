@@ -2,7 +2,7 @@
 
 namespace ApurbaLabs\ApprovalEngine\Support;
 
-use ApurbaLabs\ApprovalEngine\Models\WorkflowStage;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowStage;
 
 /**
  * Class StageNavigator
@@ -16,7 +16,7 @@ class StageNavigator
      * Retrieve the entry-point stage for a specific module.
      *
      * @param string $module
-     * @return \ApurbaLabs\ApprovalEngine\Models\WorkflowStage|null
+     * @return \ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowStage|null
      */
     public function getFirstStage(string $module)
     {
@@ -30,7 +30,7 @@ class StageNavigator
      *
      * @param string $module
      * @param int $stageOrder
-     * @return \ApurbaLabs\ApprovalEngine\Models\WorkflowStage|null
+     * @return \ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowStage|null
      */
     public function getCurrentStage(string $module, int $stageOrder)
     {
@@ -45,7 +45,7 @@ class StageNavigator
      *
      * @param string $module
      * @param int $currentStageOrder
-     * @return \ApurbaLabs\ApprovalEngine\Models\WorkflowStage|null
+     * @return \ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowStage|null
      */
     public function getNextStage(string $module, int $currentStageOrder)
     {
@@ -61,7 +61,7 @@ class StageNavigator
      *
      * @param string $module
      * @param string $role
-     * @return \ApurbaLabs\ApprovalEngine\Models\WorkflowStage|null
+     * @return \ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowStage|null
      */
     public function getStageByRole(string $module, string $role)
     {

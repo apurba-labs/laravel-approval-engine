@@ -2,7 +2,7 @@
 
 namespace ApurbaLabs\ApprovalEngine\Actions;
 
-use ApurbaLabs\ApprovalEngine\Models\WorkflowLog;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowLog;
 use ApurbaLabs\ApprovalEngine\Services\NotificationService;
 use ApurbaLabs\ApprovalEngine\Engine\Resolvers\WorkflowRecipientResolver;
 use ApurbaLabs\ApprovalEngine\Support\StageNavigator;

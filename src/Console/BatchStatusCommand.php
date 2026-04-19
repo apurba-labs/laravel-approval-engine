@@ -3,7 +3,7 @@
 namespace ApurbaLabs\ApprovalEngine\Console;
 
 use Illuminate\Console\Command;
-use ApurbaLabs\ApprovalEngine\Models\WorkflowBatch;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowBatch;
 
 class BatchStatusCommand extends Command
 {

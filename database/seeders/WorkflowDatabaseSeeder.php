@@ -2,7 +2,7 @@
 namespace ApurbaLabs\ApprovalEngine\Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use ApurbaLabs\ApprovalEngine\Models\{WorkflowStage, WorkflowSetting, WorkflowRule, WorkflowInstance};
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\{WorkflowStage, WorkflowSetting, WorkflowRule, WorkflowInstance};
 
 class WorkflowDatabaseSeeder extends Seeder
 {

@@ -4,7 +4,7 @@ namespace ApurbaLabs\ApprovalEngine\Actions;
 
 use ApurbaLabs\ApprovalEngine\Engine\WorkflowEngine;
 use ApurbaLabs\ApprovalEngine\Events\WorkflowCompleted;
-use ApurbaLabs\ApprovalEngine\Models\WorkflowLog;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowLog;
 
 class CompleteWorkflowAction
 {

@@ -6,15 +6,15 @@ use ApurbaLabs\ApprovalEngine\Actions\ApproveBatchAction;
 use ApurbaLabs\ApprovalEngine\Events\BatchApproved;
 use ApurbaLabs\ApprovalEngine\Listeners\HandleBatchApproved;
 
-use ApurbaLabs\ApprovalEngine\Models\WorkflowSetting;
-use ApurbaLabs\ApprovalEngine\Models\WorkflowBatch;
-use ApurbaLabs\ApprovalEngine\Models\WorkflowStage;
-use ApurbaLabs\ApprovalEngine\Models\WorkflowInstance;
-use ApurbaLabs\ApprovalEngine\Models\WorkflowNotification;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowSetting;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowBatch;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowStage;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowInstance;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowNotification;
 
-use ApurbaLabs\ApprovalEngine\Models\Support\Requisition;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\Support\Requisition;
 use ApurbaLabs\ApprovalEngine\Tests\Support\Models\User;
-use ApurbaLabs\ApprovalEngine\Tests\Support\Models\Role;
+use ApurbaLabs\IAM\Models\Role;
 
 use ApurbaLabs\ApprovalEngine\Tests\TestCase;
 use Illuminate\Support\Facades\Event;

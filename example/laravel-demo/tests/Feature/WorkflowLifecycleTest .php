@@ -3,8 +3,8 @@
 namespace ApurbaLabs\ApprovalEngine\Tests\Feature;
 
 use ApurbaLabs\ApprovalEngine\Tests\TestCase;
-use ApurbaLabs\ApprovalEngine\Models\WorkflowBatch;
-use ApurbaLabs\ApprovalEngine\Models\WorkflowApproval;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowBatch;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowApproval;
 use ApurbaLabs\ApprovalEngine\Tests\Models\Requisition;
 use ApurbaLabs\ApprovalEngine\Tests\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
