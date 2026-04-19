@@ -3,7 +3,7 @@
 namespace ApurbaLabs\ApprovalEngine\Database\Factories;
 
 use Illuminate\Support\Str;
-use ApurbaLabs\ApprovalEngine\Models\WorkflowBatch;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowBatch;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

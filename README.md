@@ -48,7 +48,7 @@ In most enterprise systems:
 
 - **📦 Smart Batching:** Group 50 records into **1 single email/notification**.
 - **⛓️ Multi-Stage Workflows:** Define paths like `Requisition -> HOS -> COO -> Finance`.
-- **🔗 Token-Based Links:** Approve or Reject directly from an email without logging in.
+- **🔗 Secure Token-Based Approval:** Approve or Reject directly from email or Slack via expiring secure links.
 - **🧩 Zero-Coupling:** Works with any Eloquent model without altering your schema.
 - **⏳ Escalation Engine:** (v2.0) Automatic reminders and "Escalate to Higher Role" logic.
 - **🚀 IAM Ready:** Integrates with [Laravel IAM](https://github.com/apurba-labs/laravel-iam) for scoped authority.
@@ -287,7 +287,33 @@ class RequisitionModule extends BaseWorkflowModule
 
 
 ```
+---
 
+## 🔐 Token-Based Approval API
+```md
+Approve workflows securely without login using expiring tokens.
+
+POST /api/v1/approvals/token/approve
+
+Example Request:
+
+{
+  "token": "secure-token-here"
+}
+
+Behavior
+- Validates token (expiry + usage)
+- Resolves workflow + approver
+- Executes approval via engine
+- Marks token as used
+
+👉 Perfect for:
+
+- Email approvals
+- Slack / Teams integrations
+- External systems
+
+```
 ---
 ## RBAC Integration (laravel-iam) 
 
@@ -295,23 +321,28 @@ class RequisitionModule extends BaseWorkflowModule
 This engine works seamlessly with:
 👉 Role-based access control (RBAC)
 👉 Permission-based approval resolution
-```
+
 Example:
-```php
 
 $user->can('approval.approve');
 
 ```
 ---
-## Architecture
+## Architecture (Clean & Headless)
 ```mermaid
 graph TD
-    A[UI / API] --> B[Approval Engine]
-    B --> C[Workflow Logic]
-    B --> D[Batch Processor]
-    B --> E[Stage Resolver]
-    B --> F[Events]
-    F --> G[Notifications]
+    A[Adapters: API / CLI / Queue] --> B[Workflow Manager]
+    B --> C[Workflow Engine]
+    C --> D[Domain Models]
+    C --> E[Rule Resolver]
+    C --> F[Stage Navigator]
+    C --> G[Events]
+
+    G --> H[Listeners]
+    H --> I[Notifications]
+    I --> J[Batch Processor]
+
+    B --> K[Token Service]
 ```
 ---
 ## Commands
@@ -320,9 +351,29 @@ graph TD
 php artisan approval:send-batch
 php artisan approval:status
 ```
+
+---
+
+## Why This Engine is Different
+```md
+Unlike traditional Laravel packages:
+
+- ❌ No fat controllers
+- ❌ No hardcoded approval flows
+- ❌ No tight coupling with models
+
+Instead:
+
+- ✅ Headless workflow engine
+- ✅ Event-driven lifecycle
+- ✅ Token-based approvals
+- ✅ Smart batching (enterprise-grade)
+- ✅ IAM-ready (RBAC, multi-tenant future)
+
+```
 ---
 ## Roadmap
-
+```md
 ### v1.4 (Current 🚧)
 
 ✅ Workflow engine \
@@ -339,27 +390,27 @@ php artisan approval:status
 🔜 Multi-tenant system \
 🔜 API platform
 🔜 Dashboard (Next.js)
-
+```
 ---
 
 ## ⭐ Support the Project
-
+```md
 If this package has helped you streamline your enterprise workflows, please consider supporting it:
 
 *   **Star the Repo** – It helps other developers find this tool.
 *   **Share with your Team** – Spread the word to your fellow Laravel developers.
 *   **Contribute** – Submit a PR or open an issue to help make it even better.
-
+```
 ---
 
 ### 🚀 Need a Custom Approval System?
-
+```md
 Need a hand setting up **Multi-level approvals**, **RBAC**, or a **SaaS-ready architecture**? I’m available for hire:
 
 📩 **[Connect on LinkedIn](https://www.linkedin.com/in/apurba-narayan-singh/)**  
 📧 **[Email Me: apurbansinghdev@gmail.com](mailto:apurbansinghdev@gmail.com)**
-
-
+```
+---
 ## 🤝 Contributing
 
 PRs are welcome.

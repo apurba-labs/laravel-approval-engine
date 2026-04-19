@@ -24,6 +24,9 @@ return new class extends Migration
             $table->timestamp('started_at')->nullable();
             $table->timestamp('completed_at')->nullable();
 
+            //IDEMPOTENCY unique(workflow + payload hash) guarantees that same payload won't create multiple workflows
+            $table->string('payload_hash')->nullable()->index();
+
             $table->timestamps();
 
             // Index for faster dashboard and analytics queries

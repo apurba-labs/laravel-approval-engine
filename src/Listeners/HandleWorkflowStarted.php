@@ -7,6 +7,7 @@ use ApurbaLabs\ApprovalEngine\Events\WorkflowStarted;
 use ApurbaLabs\ApprovalEngine\Contracts\NotificationInterface;
 use ApurbaLabs\ApprovalEngine\Support\StageNavigator;
 use ApurbaLabs\ApprovalEngine\Engine\Resolvers\WorkflowRecipientResolver;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowNotification;
 
 class HandleWorkflowStarted
 {
@@ -46,6 +47,15 @@ class HandleWorkflowStarted
                     'stage_id' => $stage->id,
                 ]);
                 return;
+            }
+
+            $exists = WorkflowNotification::where([
+                'workflow_instance_id' => $workflow->id,
+                'stage_id' => $stage->id,
+            ])->exists();
+
+            if ($exists) {
+                return; //idomptent check
             }
 
             // Notification

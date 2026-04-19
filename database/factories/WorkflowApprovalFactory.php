@@ -2,8 +2,6 @@
 
 namespace ApurbaLabs\ApprovalEngine\Database\Factories;
 
-use App\Models\Model;
-
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

@@ -14,6 +14,14 @@ use ApurbaLabs\ApprovalEngine\Tests\Support\Traits\InteractsWithIAM;
 class WorkflowEscalationTest extends TestCase
 {
     use InteractsWithIAM;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        //$this->setupWorkflowEnvironment(); 
+    }
+
     /** @test 
      * @group v1.4
     */

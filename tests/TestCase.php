@@ -72,13 +72,16 @@ abstract class TestCase extends BaseTestCase
     {
         parent::setUp();
 
-        \Illuminate\Support\Facades\Cache::flush();
+        //\Illuminate\Support\Facades\Cache::flush();
 
+        // race condition fix for testing - ensure tables are dropped before next test runs
+       /*
         \DB::listen(function ($query) {
             if (str_contains($query->sql, 'roles')) {
                 fwrite(STDOUT, $query->sql . PHP_EOL);
             }
         });
+        */
     }
 
     protected function tearDown(): void

@@ -1,7 +1,7 @@
 <?php
 namespace ApurbaLabs\ApprovalEngine\Database\Factories;
 
-use ApurbaLabs\ApprovalEngine\Domains\WorkflowForm\Models\WorkflowModule;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowModule;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 use Illuminate\Support\Str;

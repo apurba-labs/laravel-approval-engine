@@ -13,8 +13,23 @@ return new class extends Migration
     {
         Schema::create('workflow_modules', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('slug')->unique();
+            // Core identity
+            $table->string('name');                 // Human readable (Requisition)
+            $table->string('slug')->unique();       // system key (requisition)
+
+            // Display / UI
+            $table->string('label')->nullable();    // UI label (optional override)
+            $table->string('icon')->nullable();     // for dashboard (heroicons etc.)
+
+            // Control
+            $table->boolean('is_active')->default(true);
+
+            // Extensibility
+            $table->json('config')->nullable();     // future: dynamic config (fields, behavior)
+
+            // SaaS / future (safe to keep now)
+            $table->string('source')->default('core'); // core | plugin | custom
+
             $table->timestamps();
         });
     }

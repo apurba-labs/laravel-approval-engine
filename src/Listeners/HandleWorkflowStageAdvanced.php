@@ -50,6 +50,15 @@ class HandleWorkflowStageAdvanced
                 return;
             }
 
+            $exists = WorkflowApproval::where([
+                'workflow_instance_id' => $workflow->id,
+                'stage_order' => $stage->stage_order,
+            ])->exists();
+
+            if ($exists) {
+                return; // idempotent guard
+            }
+
             $now = now();
 
             // Create NEXT approval

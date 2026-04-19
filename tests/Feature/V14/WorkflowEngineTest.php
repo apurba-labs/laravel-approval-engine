@@ -56,8 +56,11 @@ class WorkflowEngineTest extends TestCase
             'amount' => 5000,
         ]);
 
-        // simulate approval
-        $manager->approve($workflow->id);
+        $approval = WorkflowApproval::where('workflow_instance_id', $workflow->id)
+        ->where('status', 'pending')
+        ->first();
+
+        $manager->approve($workflow->id, $approval->user_id);
 
         $workflow->refresh();
 
@@ -75,12 +78,16 @@ class WorkflowEngineTest extends TestCase
             'amount' => 5000,
         ]);
 
-        // simulate multiple approvals (adjust count based on stages)
-        for ($i = 0; $i < 3; $i++) {
-            $manager->approve($workflow->id);
-        }
+        while ($workflow->status === 'pending') {
 
-        $workflow->refresh();
+            $approval = WorkflowApproval::where('workflow_instance_id', $workflow->id)
+                ->where('status', 'pending')
+                ->first();
+
+            $manager->approve($workflow->id, $approval->user_id);
+
+            $workflow->refresh();
+        }
 
         $this->assertEquals('completed', $workflow->status);
     }

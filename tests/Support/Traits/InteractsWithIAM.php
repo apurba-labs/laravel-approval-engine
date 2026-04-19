@@ -51,6 +51,14 @@ trait InteractsWithIAM
     }
 
     /**
+     * Create user with direct permission assignment
+     */
+    protected function createUserWithPermission(string $roleName, $scopeId = null, array $permissions = [])
+    {
+        return $this->createUserWithRole($roleName, $permissions, $scopeId);
+    }
+
+    /**
      * Create workflow stages for module
      */
     protected function createWorkflowStages(string $module = 'requisition'): void

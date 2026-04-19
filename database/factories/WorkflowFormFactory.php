@@ -4,8 +4,8 @@ namespace ApurbaLabs\ApprovalEngine\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-use ApurbaLabs\ApprovalEngine\Domains\WorkflowForm\Models\WorkflowModule;
-use ApurbaLabs\ApprovalEngine\Domains\WorkflowForm\Models\WorkflowForm;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowModule;
+use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowForm;
 
 /**
  * @extends Factory<Model>

@@ -42,6 +42,14 @@ class WorkflowEngine
                 throw new RuntimeException("No stages configured for module {$moduleName}");
             }
 
+            $hash = hash('sha256', json_encode([
+                'module' => $module,
+                'payload' => $payload,
+            ]));
+            $existing = WorkflowInstance::where('payload_hash', $hash)->first();
+            if ($existing) {
+                 return $existing; // idempotent
+            }
             // Create workflow instance
             $workflow = WorkflowInstance::create([
                 'module' => $moduleName,
@@ -49,6 +57,7 @@ class WorkflowEngine
                 'role' => $firstStage->role,
                 'status' => 'pending',
                 'payload' => $payload,
+                'payload_hash' => $hash,
                 'started_at' => now(),
             ]);
 
