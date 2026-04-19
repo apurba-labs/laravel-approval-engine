@@ -403,13 +403,21 @@ If this package has helped you streamline your enterprise workflows, please cons
 ```
 ---
 
-### 🚀 Need a Custom Approval System?
-```md
-Need a hand setting up **Multi-level approvals**, **RBAC**, or a **SaaS-ready architecture**? I’m available for hire:
+## 💼 Consulting & Implementation
+
+This engine is actively used as the foundation for scalable approval systems.
+
+If you need help designing or integrating:
+
+- Workflow engines
+- Approval pipelines
+- Multi-tenant SaaS systems
+
+Feel free to reach out.
 
 📩 **[Connect on LinkedIn](https://www.linkedin.com/in/apurba-narayan-singh/)**  
-📧 **[Email Me: apurbansinghdev@gmail.com](mailto:apurbansinghdev@gmail.com)**
-```
+📧 **apurbansinghdev@gmail.com**
+
 ---
 ## 🤝 Contributing
 
