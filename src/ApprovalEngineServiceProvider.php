@@ -18,6 +18,7 @@ use ApurbaLabs\ApprovalEngine\Console\BatchStatusCommand;
 use ApurbaLabs\ApprovalEngine\Console\SetupApprovalDemo;
 use ApurbaLabs\ApprovalEngine\Console\ProcessWorkflowNotifications;
 use ApurbaLabs\ApprovalEngine\Services\PluginManager;
+use ApurbaLabs\ApprovalEngine\Services\ModuleRegistry;
 
 use ApurbaLabs\ApprovalEngine\Contracts\NotificationInterface;
 use ApurbaLabs\ApprovalEngine\Services\NotificationService;
@@ -66,6 +67,8 @@ class ApprovalEngineServiceProvider extends ServiceProvider
         
         $this->app->register(PackageEventServiceProvider::class);
         $this->app->register(IAMServiceProvider::class);
+
+        $this->app->singleton(ModuleRegistry::class);
 
         $this->app->singleton(WorkflowManager::class);
         $this->app->singleton(PluginManager::class);

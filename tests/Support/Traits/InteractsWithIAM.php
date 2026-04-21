@@ -63,7 +63,7 @@ trait InteractsWithIAM
      */
     protected function createWorkflowStages(string $module = 'requisition'): void
     {
-        WorkflowStage::insert([
+        $stages = [
             [
                 'module' => $module,
                 'stage_order' => 1,
@@ -78,7 +78,11 @@ trait InteractsWithIAM
                 'assign_type' => 'role',
                 'assign_value' => 'finance',
             ],
-        ]);
+        ];
+
+        foreach ($stages as $stage) {
+            WorkflowStage::create($stage);
+        }
     }
 
     /**

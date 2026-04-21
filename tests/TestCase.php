@@ -72,6 +72,8 @@ abstract class TestCase extends BaseTestCase
     {
         parent::setUp();
 
+        app()->instance('tenant_id', 'test-tenant-1');
+
         //\Illuminate\Support\Facades\Cache::flush();
 
         // race condition fix for testing - ensure tables are dropped before next test runs

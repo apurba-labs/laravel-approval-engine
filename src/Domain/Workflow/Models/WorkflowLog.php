@@ -3,6 +3,7 @@ namespace ApurbaLabs\ApprovalEngine\Domain\Workflow\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use ApurbaLabs\ApprovalEngine\Support\Traits\HasTenant;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\Factory; 
 use ApurbaLabs\ApprovalEngine\Database\Factories\WorkflowLogFactory;
@@ -11,7 +12,7 @@ use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowInstance;
 
 class WorkflowLog extends Model
 {
-    use HasFactory;
+    use HasFactory, HasTenant;
 
     protected $table = 'workflow_logs';
 
