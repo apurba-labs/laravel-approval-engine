@@ -5,11 +5,12 @@ namespace ApurbaLabs\ApprovalEngine\Domain\Workflow\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Factories\Factory; 
+use ApurbaLabs\ApprovalEngine\Support\Traits\HasTenant;
 use ApurbaLabs\ApprovalEngine\Database\Factories\WorkflowRuleFactory;
 
 class WorkflowRule extends Model
 {
-    use HasFactory;
+    use HasFactory, HasTenant;
 
     protected $fillable = [
         'module', 

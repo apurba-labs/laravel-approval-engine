@@ -112,6 +112,11 @@ abstract class BaseWorkflowModule implements WorkflowModuleInterface
         return null;
     }
 
+    public function ownerRelations(): array
+    {
+        return [];
+    }
+
     protected function resolveRelationModel($relation)
     {
         $map = method_exists($this, 'relationModels')

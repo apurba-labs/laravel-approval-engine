@@ -19,4 +19,9 @@ class PluginManager
             $plugin->boot();
         }
     }
+
+    public function clear(): void
+    {
+        $this->plugins = [];
+    }
 }

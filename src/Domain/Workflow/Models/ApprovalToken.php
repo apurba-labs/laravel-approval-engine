@@ -4,9 +4,11 @@ namespace ApurbaLabs\ApprovalEngine\Domain\Workflow\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use ApurbaLabs\ApprovalEngine\Support\Traits\HasTenant;
 
 class ApprovalToken extends Model
 {
+    use HasTenant;
     /**
      * The attributes that are mass assignable.
      */
