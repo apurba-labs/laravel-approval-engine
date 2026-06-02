@@ -2,6 +2,8 @@
 
 namespace ApurbaLabs\ApprovalEngine\Engine;
 
+use ApurbaLabs\ApprovalEngine\Services\ModuleRegistry;
+use ApurbaLabs\ApprovalEngine\Engine\Resolvers\WorkflowRecipientResolver;
 use ApurbaLabs\ApprovalEngine\Contracts\WorkflowModuleInterface;
 use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowInstance;
 use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowLog;
@@ -61,10 +63,20 @@ class WorkflowEngine
                 'started_at' => now(),
             ]);
 
+            $recipient = app(WorkflowRecipientResolver::class)
+                ->resolve($firstStage, $workflow);
+
+            if (!$recipient) {
+                throw new \RuntimeException(
+                    "No recipient resolved for stage [{$firstStage->id}]"
+                );
+            }
+
             // Create log entry
             WorkflowLog::create([
                 'workflow_instance_id' => $workflow->id,
                 'module' => $moduleName,
+                'user_id' => $recipient->id,
                 'role' => $firstStage->role,
                 'stage_order' => $firstStage->stage_order,
                 'entered_at' => now(),
@@ -72,7 +84,7 @@ class WorkflowEngine
 
             WorkflowApproval::create([
                 'workflow_instance_id' => $workflow->id,
-                'user_id' => $recipient?->id ?? 1, // fallback for test
+                'user_id' => $recipient->id,
                 'stage_id' => $firstStage->id,
                 'stage_order' => $firstStage->stage_order,
                 'status' => 'pending',
@@ -129,6 +141,8 @@ class WorkflowEngine
             // Complete if no next stage
             if (!$nextStage) {
 
+                $this->closeCurrentStageLog($workflow);
+
                 $workflow->update([
                     'status' => 'completed',
                     'completed_at' => now(),
@@ -139,8 +153,23 @@ class WorkflowEngine
                 return $workflow;
             }
 
+            $recipient = app(WorkflowRecipientResolver::class)
+                ->resolve($nextStage, $workflow);
+
+            if (!$recipient) {
+                throw new \RuntimeException(
+                    "No recipient resolved for next stage [{$nextStage->id}]"
+                );
+            }
+
+            // Close current log
+            $this->closeCurrentStageLog($workflow);
+
             // Move to next stage
             $workflow->update([
+                'user_id' => $recipient->id,
+                'stage_id' => $nextStage->id,
+                'stage_order' => $nextStage->stage_order,
                 'current_stage_order' => $nextStage->stage_order,
                 'role' => $nextStage->role,
             ]);
@@ -149,6 +178,7 @@ class WorkflowEngine
             WorkflowLog::create([
                 'workflow_instance_id' => $workflow->id,
                 'module' => $workflow->module,
+                'user_id' => $recipient->id,
                 'role' => $nextStage->role,
                 'stage_order' => $nextStage->stage_order,
                 'entered_at' => now(),
@@ -201,6 +231,8 @@ class WorkflowEngine
                 'rejected_at' => now(),
             ]);
 
+            $this->closeCurrentStageLog($workflow);
+
             // Update workflow
             $workflow->update([
                 'status' => 'rejected',
@@ -211,6 +243,7 @@ class WorkflowEngine
             WorkflowLog::create([
                 'workflow_instance_id' => $workflow->id,
                 'module' => $workflow->module,
+                'user_id' => $userId,
                 'role' => 'rejected',
                 'stage_order' => $workflow->current_stage_order,
                 'entered_at' => now(),
@@ -223,52 +256,33 @@ class WorkflowEngine
         });
     }
 
+    protected function closeCurrentStageLog( WorkflowInstance $workflow ): void
+    {
+        WorkflowLog::query()
+            ->where('workflow_instance_id', $workflow->id)
+            ->where('stage_order', $workflow->current_stage_order)
+            ->whereNull('exited_at')
+            ->latest('id')
+            ->first()
+            ?->update([
+                'exited_at' => now(),
+            ]);
+    }
+
     /**
      * Resolve module from config/discovery
      */
     public function getModule(string $moduleName): WorkflowModuleInterface
     {
-        $modules = $this->discoverModules();
+        $module = app(ModuleRegistry::class)
+            ->get($moduleName);
 
-        foreach ($modules as $module) {
-            if ($module->name() === $moduleName) {
-                return $module;
-            }
+        if (!$module) {
+            throw new RuntimeException(
+                "Workflow module [{$moduleName}] not found."
+            );
         }
 
-        throw new RuntimeException("Workflow module [{$moduleName}] not found.");
-    }
-
-    /**
-     * Discover modules dynamically
-     */
-    public function discoverModules(): array
-    {
-        $modules = [];
-
-        $path = config('approval-engine.modules_path', app_path('Workflow/Modules'));
-        $namespace = config('approval-engine.modules_namespace', 'App\\Workflow\\Modules\\');
-
-        if (!is_dir($path)) {
-            return [];
-        }
-
-        $files = glob($path . '/*Module.php');
-
-        foreach ($files as $file) {
-
-            $class = $namespace . basename($file, '.php');
-
-            if (class_exists($class)) {
-
-                $instance = app($class);
-
-                if ($instance instanceof WorkflowModuleInterface) {
-                    $modules[] = $instance;
-                }
-            }
-        }
-
-        return $modules;
+        return $module;
     }
 }
