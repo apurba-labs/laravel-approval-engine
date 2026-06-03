@@ -16,10 +16,20 @@ use ApurbaLabs\ApprovalEngine\Notifications\WorkflowBatchNotification;
 use Illuminate\Support\Str;
 
 use ApurbaLabs\ApprovalEngine\Tests\Support\Traits\InteractsWithIAM;
-
+use ApurbaLabs\ApprovalEngine\Services\ModuleRegistry;
+use ApurbaLabs\ApprovalEngine\Tests\Support\Modules\PurchaseModule;
 class WorkflowLifecycleTest extends TestCase
 {
     use InteractsWithIAM;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        app(ModuleRegistry::class)->register(
+            new PurchaseModule()
+        );
+    }
 
     /** @test
      * @group v1.3

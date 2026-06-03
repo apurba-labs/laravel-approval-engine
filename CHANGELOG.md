@@ -31,3 +31,31 @@
 ---
 
 🔥 This release transforms the package into a **production-grade workflow engine** ready for SaaS architecture.
+
+---
+
+## [1.6.0] - 2026-06-03
+
+### Added
+
+* Added IAM-driven recipient resolution
+* Added ModuleRegistry-based module discovery
+* Added assign_type / assign_value recipient support
+
+### Improved
+
+* Improved workflow stage lifecycle tracking
+* Improved workflow engine modularity for SaaS integrations
+* Improved workflow execution architecture for multi-tenant SaaS platforms
+
+### Fixed
+
+* Removed hardcoded approval recipient fallback
+* Fixed workflow recipient assignment flow
+* Fixed module resolution consistency across workflow execution
+
+### Technical Notes
+
+* Workflow execution now resolves recipients through a dedicated resolver layer
+* Module registration is now driven through ModuleRegistry
+* Approval assignment is now compatible with IAM roles, users, and future assignment strategies
