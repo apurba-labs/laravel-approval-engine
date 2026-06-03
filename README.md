@@ -329,6 +329,7 @@ $user->can('approval.approve');
 ```
 ---
 ## Architecture (Clean & Headless)
+
 ```mermaid
 graph TD
 
@@ -352,7 +353,8 @@ graph TD
 
     K --> L[Email Slack Teams]
 
-    M[Approval Token Service]sssss
+    M[Approval Token Service]
+
 ```
 
 Applications own the business data.
@@ -451,13 +453,13 @@ These concerns belong to the consuming application.
 
 
 ## ⭐ Support the Project
-```md
+
 If this package has helped you streamline your enterprise workflows, please consider supporting it:
 
-*   **Star the Repo** – It helps other developers find this tool.
-*   **Share with your Team** – Spread the word to your fellow Laravel developers.
-*   **Contribute** – Submit a PR or open an issue to help make it even better.
-```
+- **Star the Repo** – It helps other developers find this tool.
+- **Share with your Team** – Spread the word to your fellow Laravel developers.
+- **Contribute** – Submit a PR or open an issue to help make it even better.
+
 ---
 
 ## 💼 Consulting & Implementation
