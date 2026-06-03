@@ -400,42 +400,43 @@ Tenancy, billing, user management, dashboards, and application-specific concerns
 
 ```
 ---
+
 ## Roadmap
 
 ### v1.7 (Current ✅)
 
-✅ Headless workflow engine
-✅ Multi-stage approval lifecycle
-✅ Event-driven architecture
-✅ Token-based approvals
-✅ Smart notification batching
-✅ Plugin system
-✅ Module registry
-✅ IAM integration support
-✅ Clean architecture boundaries
+* ✅ Headless workflow engine
+* ✅ Multi-stage approval lifecycle
+* ✅ Event-driven architecture
+* ✅ Token-based approvals
+* ✅ Smart notification batching
+* ✅ Plugin system
+* ✅ Module registry
+* ✅ IAM integration support
+* ✅ Clean architecture boundaries
 
 ### v1.8
 
-🔜 SLA and escalation policies
-🔜 Approval delegation
-🔜 Enhanced notification channels (Slack, Teams, Webhooks)
-🔜 Workflow analytics and metrics
-🔜 Reminder and follow-up automation
+* 🔜 SLA and escalation policies
+* 🔜 Approval delegation
+* 🔜 Enhanced notification channels (Slack, Teams, Webhooks)
+* 🔜 Workflow analytics and metrics
+* 🔜 Reminder and follow-up automation
 
 ### v2.0
 
-🔜 Visual workflow designer
-🔜 Dynamic rule builder
-🔜 Workflow versioning
-🔜 Advanced audit and compliance tools
-🔜 Enterprise reporting and analytics
+* 🔜 Visual workflow designer
+* 🔜 Dynamic rule builder
+* 🔜 Workflow versioning
+* 🔜 Advanced audit and compliance tools
+* 🔜 Enterprise reporting and analytics
 
 ### Future Exploration
 
-🔜 Plugin marketplace
-🔜 BPMN import/export
-🔜 Workflow simulation and testing tools
-🔜 AI-assisted workflow recommendations
+* 🔜 Plugin marketplace
+* 🔜 BPMN import/export
+* 🔜 Workflow simulation and testing tools
+* 🔜 AI-assisted workflow recommendations
 
 ---
 
