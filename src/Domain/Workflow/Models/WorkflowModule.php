@@ -6,12 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\Factory; 
 use Illuminate\Database\Eloquent\Factories\HasFactory; 
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use ApurbaLabs\ApprovalEngine\Support\Traits\HasTenant;
 use ApurbaLabs\ApprovalEngine\Database\Factories\WorkflowModuleFactory;
 
 class WorkflowModule extends Model
 {
-    use HasFactory, HasTenant;
+    use HasFactory;
     protected $table = 'workflow_modules';
     /**
      * The attributes that are mass assignable.

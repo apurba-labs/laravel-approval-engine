@@ -1,22 +1,52 @@
 # Roadmap
 
-Our vision for the future of the **Laravel Approval Engine**.
+The future direction of Laravel Approval Engine.
 
-## ✅ v1.0.0 (Current)
-- [x] Multi-stage approval workflow.
-- [x] Dynamic module discovery.
-- [x] Email-based batch approvals.
+## ✅ v1.x (Completed)
 
-## 🚀 v1.1.0 (Next Up)
-- [ ] **Reminder System**: Automatically re-send emails for pending batches.
-- [ ] **Slack/Teams Integration**: Send batch alerts directly to chat.
-- [ ] **Batch Rejection**: Add logic to handle "Reject All" with comments.
+* [x] Multi-stage approval workflows
+* [x] Dynamic module registration
+* [x] Event-driven workflow lifecycle
+* [x] Plugin architecture
+* [x] Token-based approvals
+* [x] Smart notification batching
+* [x] Workflow audit logging
+* [x] IAM integration support
+* [x] Headless architecture
 
-## 🌟 v2.0.0 (Future)
-- [ ] **Visual Builder**: A UI to drag-and-drop workflow stages.
-- [ ] **Admin Dashboard**: Filament/Nova resource to monitor all active batches.
-- [ ] **Analytics**: Track approval speed and bottleneck reports.
+## 🚀 v1.8
 
-## 🌟 v3.0.0 (Future)
-- [ ] **SaaS**: Multi-tenant SaaS platform. dashboard + API + billing
+* [ ] SLA management
+* [ ] Escalation policies
+* [ ] Approval delegation
+* [ ] Enhanced notification channels
+* [ ] Retry and resilience improvements
 
+## 🌟 v2.0
+
+* [ ] Visual workflow designer
+* [ ] Dynamic rule builder
+* [ ] Workflow versioning
+* [ ] Advanced analytics and bottleneck reporting
+* [ ] Enterprise audit enhancements
+
+## 🔌 Future Exploration
+
+* [ ] Plugin marketplace
+* [ ] BPMN import/export
+* [ ] Advanced workflow simulation
+* [ ] AI-assisted workflow recommendations
+
+---
+
+### Out of Scope
+
+The following are intentionally outside the scope of Laravel Approval Engine:
+
+* Multi-tenant SaaS platforms
+* Billing and subscriptions
+* User onboarding systems
+* CRM / ERP functionality
+* Dashboard applications
+
+These concerns should be implemented by the consuming application.

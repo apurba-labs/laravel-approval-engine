@@ -5,13 +5,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use ApurbaLabs\ApprovalEngine\Support\Traits\HasTenant;
 use Illuminate\Database\Eloquent\Factories\Factory; 
 use ApurbaLabs\ApprovalEngine\Database\Factories\WorkflowBatchFactory;
 
 class WorkflowBatch extends Model
 {
-    use HasFactory, HasTenant;
+    use HasFactory;
 
     protected $table = 'workflow_batches';
 

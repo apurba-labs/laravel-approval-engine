@@ -1,4 +1,9 @@
 <?php
+/**
+ * @deprecated
+ * Tenant support was removed in v1.7.0.
+ * Kept for historical migration compatibility.
+ */
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;

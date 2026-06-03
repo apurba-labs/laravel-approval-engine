@@ -331,19 +331,35 @@ $user->can('approval.approve');
 ## Architecture (Clean & Headless)
 ```mermaid
 graph TD
-    A[Adapters: API / CLI / Queue] --> B[Workflow Manager]
+
+    A[Adapters API CLI Queue] --> B[Workflow Manager]
+
     B --> C[Workflow Engine]
-    C --> D[Domain Models]
+
+    C --> D[Workflow Domain Models]
     C --> E[Rule Resolver]
     C --> F[Stage Navigator]
-    C --> G[Events]
+
+    C --> G[Workflow Events]
 
     G --> H[Listeners]
-    H --> I[Notifications]
-    I --> J[Batch Processor]
 
-    B --> K[Token Service]
+    H --> I[Notification Service]
+
+    I --> J[Notification Dispatcher]
+
+    J --> K[Queue Jobs]
+
+    K --> L[Email Slack Teams]
+
+    M[Approval Token Service]sssss
 ```
+
+Applications own the business data.
+
+The Approval Engine only orchestrates workflow state,
+approval progression, events, notifications, and audit history.
+
 ---
 ## Commands
 
@@ -360,38 +376,79 @@ Unlike traditional Laravel packages:
 
 - ❌ No fat controllers
 - ❌ No hardcoded approval flows
+- ❌ No framework-specific business logic
+- ❌ No tenant assumptions
 - ❌ No tight coupling with models
 
 Instead:
 
 - ✅ Headless workflow engine
 - ✅ Event-driven lifecycle
+- ✅ Module-based architecture
+- ✅ Plugin system for extensibility
 - ✅ Token-based approvals
-- ✅ Smart batching (enterprise-grade)
-- ✅ IAM-ready (RBAC, multi-tenant future)
+- ✅ Smart notification batching
+- ✅ IAM-friendly (works with any RBAC solution)
+- ✅ Application-agnostic design
+- ✅ Enterprise-ready audit trail
+
+The engine focuses on workflow orchestration only.
+
+Tenancy, billing, user management, dashboards, and application-specific concerns belong to the consuming application.
 
 ```
 ---
 ## Roadmap
-```md
-### v1.4 (Current 🚧)
 
-✅ Workflow engine \
-✅ IAM integration \
-🔜 Filament UI \
-🔜 Rule Builder (no-code)
+### v1.7 (Current ✅)
+
+✅ Headless workflow engine
+✅ Multi-stage approval lifecycle
+✅ Event-driven architecture
+✅ Token-based approvals
+✅ Smart notification batching
+✅ Plugin system
+✅ Module registry
+✅ IAM integration support
+✅ Clean architecture boundaries
+
+### v1.8
+
+🔜 SLA and escalation policies
+🔜 Approval delegation
+🔜 Enhanced notification channels (Slack, Teams, Webhooks)
+🔜 Workflow analytics and metrics
+🔜 Reminder and follow-up automation
 
 ### v2.0
 
-🔜 Slack / Teams integration \
-🔜 Advanced analytics
+🔜 Visual workflow designer
+🔜 Dynamic rule builder
+🔜 Workflow versioning
+🔜 Advanced audit and compliance tools
+🔜 Enterprise reporting and analytics
 
-### v3.0 (SaaS)
-🔜 Multi-tenant system \
-🔜 API platform
-🔜 Dashboard (Next.js)
-```
+### Future Exploration
+
+🔜 Plugin marketplace
+🔜 BPMN import/export
+🔜 Workflow simulation and testing tools
+🔜 AI-assisted workflow recommendations
+
 ---
+
+### Out of Scope
+
+The following are intentionally outside the scope of Laravel Approval Engine:
+
+* Multi-tenant SaaS platforms
+* Billing and subscriptions
+* User onboarding systems
+* CRM / ERP functionality
+* Dashboard applications
+
+These concerns belong to the consuming application.
+
 
 ## ⭐ Support the Project
 ```md
@@ -411,7 +468,10 @@ If you need help designing or integrating:
 
 - Workflow engines
 - Approval pipelines
-- Multi-tenant SaaS systems
+- Event-driven architectures
+- Enterprise workflow automation
+- Laravel IAM / RBAC systems
+- Workflow analytics and notification strategies
 
 Feel free to reach out.
 

@@ -3,13 +3,11 @@ namespace ApurbaLabs\ApprovalEngine\Domain\Workflow\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use ApurbaLabs\ApprovalEngine\Support\Traits\HasTenant;
 
 use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowInstance;
 
 class WorkflowApproval extends Model
 {
-    use HasTenant;
     
     protected $table = 'workflow_approvals';
 

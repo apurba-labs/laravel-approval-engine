@@ -7,13 +7,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Factories\Factory; 
-use ApurbaLabs\ApprovalEngine\Support\Traits\HasTenant;
 
 use ApurbaLabs\ApprovalEngine\Database\Factories\WorkflowNotificationFactory;
 
 class WorkflowNotification extends Model
 {
-    use HasFactory, HasTenant;
+    use HasFactory;
     
     protected $guarded = [];
 

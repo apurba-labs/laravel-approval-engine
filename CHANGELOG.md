@@ -59,3 +59,27 @@
 * Workflow execution now resolves recipients through a dedicated resolver layer
 * Module registration is now driven through ModuleRegistry
 * Approval assignment is now compatible with IAM roles, users, and future assignment strategies
+
+## [v1.7.0] - 2026-06-03
+
+### Changed
+
+- Removed tenant coupling from workflow engine
+- Removed HasTenant trait
+- Removed tenant-aware workflow table requirements
+- Restored full package agnosticism
+
+### Architecture
+
+The Approval Engine is now fully reusable across:
+
+- Single-tenant applications
+- Enterprise systems
+- Government platforms
+- Multi-tenant SaaS applications
+
+Multi-tenancy should be implemented by the consuming application rather than the workflow engine itself.
+
+### Notes
+
+This change aligns the Approval Engine with the design philosophy already used by Laravel IAM, where tenancy concerns belong to the application layer.

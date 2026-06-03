@@ -1,4 +1,9 @@
 <?php
+/**
+ * @deprecated
+ * Tenant support was removed in v1.7.0.
+ * Kept for historical migration compatibility.
+ */
 
 namespace ApurbaLabs\ApprovalEngine\Support\Traits;
 

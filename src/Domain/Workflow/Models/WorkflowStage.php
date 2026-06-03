@@ -5,12 +5,11 @@ namespace ApurbaLabs\ApprovalEngine\Domain\Workflow\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use ApurbaLabs\ApprovalEngine\Support\Traits\HasTenant;
 use ApurbaLabs\ApprovalEngine\Database\Factories\WorkflowStageFactory;
 
 class WorkflowStage extends Model
 {
-    use HasFactory, HasTenant;
+    use HasFactory;
 
     /**
      * The attributes that are mass assignable.

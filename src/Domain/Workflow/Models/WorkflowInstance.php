@@ -5,14 +5,13 @@ namespace ApurbaLabs\ApprovalEngine\Domain\Workflow\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use ApurbaLabs\ApprovalEngine\Support\Traits\HasTenant;
 use Illuminate\Database\Eloquent\Factories\Factory; 
 use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowNotification;
 use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowLog;
 use ApurbaLabs\ApprovalEngine\Database\Factories\WorkflowInstanceFactory;
 class WorkflowInstance extends Model
 {
-    use HasFactory, HasTenant;
+    use HasFactory;
     
     protected $guarded = [];
     
