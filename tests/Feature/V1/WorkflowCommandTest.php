@@ -104,6 +104,7 @@ class WorkflowCommandTest extends TestCase
         $this->assertInstanceOf(WorkflowModuleInterface::class, $modules[0]);
         
     }
+    
     /** @test 
      * @group v1
      * Mocking the WorkflowEngine's internal behavior to simulate the approval process is required for this test. Once that is set up, the test can be uncommented and should work as intended.

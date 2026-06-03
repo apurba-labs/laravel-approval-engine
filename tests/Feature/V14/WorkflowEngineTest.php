@@ -4,13 +4,14 @@ namespace ApurbaLabs\ApprovalEngine\Tests\Feature\V14;
 
 use ApurbaLabs\ApprovalEngine\Tests\TestCase;
 
+use ApurbaLabs\ApprovalEngine\Services\ModuleRegistry;
 use ApurbaLabs\ApprovalEngine\Services\WorkflowManager;
 use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowStage;
 use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowInstance;
 use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowApproval;
 use ApurbaLabs\ApprovalEngine\Domain\Workflow\Models\WorkflowNotification;
-
 use ApurbaLabs\ApprovalEngine\Tests\Support\Traits\InteractsWithIAM;
+use ApurbaLabs\ApprovalEngine\Tests\Support\Modules\RequisitionModule;
 
 class WorkflowEngineTest extends TestCase
 {
@@ -21,6 +22,10 @@ class WorkflowEngineTest extends TestCase
         parent::setUp();
 
         $this->setupWorkflowEnvironment(); 
+
+        app(ModuleRegistry::class)->register(
+            new RequisitionModule()
+        );
     }
 
     /** @test */

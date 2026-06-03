@@ -167,11 +167,17 @@ class WorkflowEngine
 
             // Move to next stage
             $workflow->update([
-                'user_id' => $recipient->id,
-                'stage_id' => $nextStage->id,
-                'stage_order' => $nextStage->stage_order,
                 'current_stage_order' => $nextStage->stage_order,
                 'role' => $nextStage->role,
+            ]);
+
+            WorkflowApproval::create([
+                'workflow_instance_id' => $workflow->id,
+                'stage_id' => $nextStage->id,
+                'stage_order' => $nextStage->stage_order,
+                'user_id' => $recipient->id,
+                'status' => 'pending',
+                'assigned_at' => now(),
             ]);
 
             // Log
@@ -277,12 +283,52 @@ class WorkflowEngine
         $module = app(ModuleRegistry::class)
             ->get($moduleName);
 
-        if (!$module) {
-            throw new RuntimeException(
-                "Workflow module [{$moduleName}] not found."
-            );
+        if ($module) {
+            return $module;
         }
 
-        return $module;
+        $modules = $this->discoverModules();
+        foreach ($modules as $module) {
+            if ($module->name() === $moduleName) {
+                return $module;
+            }
+        }
+
+        throw new RuntimeException("Workflow module [{$moduleName}] not found.");
+
     }
+
+    /**
+     * Discover modules dynamically
+     */
+    public function discoverModules(): array
+    {
+        $modules = [];
+
+        $path = config('approval-engine.modules_path', app_path('Workflow/Modules'));
+        $namespace = config('approval-engine.modules_namespace', 'App\\Workflow\\Modules\\');
+
+        if (!is_dir($path)) {
+            return [];
+        }
+
+        $files = glob($path . '/*Module.php');
+
+        foreach ($files as $file) {
+
+            $class = $namespace . basename($file, '.php');
+
+            if (class_exists($class)) {
+
+                $instance = app($class);
+
+                if ($instance instanceof WorkflowModuleInterface) {
+                    $modules[] = $instance;
+                }
+            }
+        }
+
+        return $modules;
+    }
+
 }
