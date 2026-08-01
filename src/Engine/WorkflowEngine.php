@@ -128,6 +128,7 @@ class WorkflowEngine
             $approval->update([
                 'status' => 'approved',
                 'approved_at' => now(),
+                'completed_at' => now(),
             ]);
 
             $oldRole = $workflow->role;

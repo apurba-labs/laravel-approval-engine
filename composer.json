@@ -39,7 +39,7 @@
   },
   "require": {
     "php": "^8.4",
-    "apurba-labs/laravel-iam": "^0.5.1",
+    "apurba-labs/laravel-iam": "^1.0.0",
     "illuminate/support": "^10.0|^11.0|^12.0|^13.0"
   },
   "require-dev": {
